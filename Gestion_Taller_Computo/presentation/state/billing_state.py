@@ -67,11 +67,11 @@ class BillingState(rx.State):
     def _get_status_color(self, status: str) -> str:
         colors = {
             "PENDING": "amber",
-            "PAID": "emerald",
+            "PAID": "green",
             "PARTIAL": "cyan",
             "CANCELLED": "red"
         }
-        return colors.get(status, "slate")
+        return colors.get(status, "gray")
 
     @rx.var
     def filtered_invoices(self) -> List[Dict[str, Any]]:
@@ -96,6 +96,13 @@ class BillingState(rx.State):
         
         self.payment_amount = details["balance_due"]
         self.show_payment_modal = True
+
+    @rx.event
+    def set_payment_amount(self, value: str):
+        try:
+            self.payment_amount = float(value) if value else 0.0
+        except ValueError:
+            self.payment_amount = 0.0
 
     @rx.event
     def process_payment(self):

@@ -86,8 +86,8 @@ def users_tab() -> rx.Component:
                         rx.table.cell(rx.badge(u["role"], color_scheme=u["role_color"], variant="soft")),
                         rx.table.cell(
                             rx.badge(
-                                "Activo" if u["is_active"] else "Suspendido",
-                                color_scheme="emerald" if u["is_active"] else "red",
+                                rx.cond(u["is_active"], "Activo", "Suspendido"),
+                                color_scheme=rx.cond(u["is_active"], "green", "red"),
                                 variant="outline",
                             )
                         ),
@@ -101,7 +101,7 @@ def users_tab() -> rx.Component:
                                 rx.icon_button(
                                     rx.icon(tag="power", size=16),
                                     variant="ghost",
-                                    color_scheme="red" if u["is_active"] else "emerald",
+                                    color_scheme=rx.cond(u["is_active"], "red", "green"),
                                     on_click=lambda: SettingsState.toggle_user_active(u["id"], u["is_active"]),
                                 ),
                                 spacing="2",

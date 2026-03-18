@@ -65,7 +65,7 @@ class SettingsState(rx.State):
                     "email": u.email,
                     "role": u.role.value,
                     "is_active": u.is_active,
-                    "role_color": "cyan" if u.role == UserRole.ADMIN else "indigo" if u.role == UserRole.TECHNICIAN else "slate"
+                    "role_color": "cyan" if u.role == UserRole.ADMIN else "indigo" if u.role == UserRole.TECHNICIAN else "gray"
                 })
         except Exception as e:
             print(f"Error fetching users: {e}")

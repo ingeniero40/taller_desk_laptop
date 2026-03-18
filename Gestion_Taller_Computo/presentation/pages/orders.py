@@ -23,7 +23,7 @@ def order_header() -> rx.Component:
                 rx.icon(tag="refresh-cw", size=18),
                 on_click=OrderState.fetch_orders,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -70,9 +70,9 @@ def order_table() -> rx.Component:
                                 on_click=lambda: OrderState.open_status_modal(o),
                             ),
                             rx.icon_button(
-                                rx.icon(tag="edit", size=16),
+                                rx.icon(tag="pencil", size=16),
                                 variant="ghost",
-                                color_scheme="slate",
+                                color_scheme="gray",
                             ),
                             spacing="2",
                         )

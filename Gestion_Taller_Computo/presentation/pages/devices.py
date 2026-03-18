@@ -24,7 +24,7 @@ def device_header() -> rx.Component:
                 rx.icon(tag="refresh-cw", size=18),
                 on_click=DeviceState.fetch_all_data,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -76,13 +76,13 @@ def device_table() -> rx.Component:
                             rx.icon_button(
                                 rx.icon(tag="history", size=16),
                                 variant="soft",
-                                color_scheme="slate",
+                                color_scheme="gray",
                                 tooltip="Ver Historial de Órdenes",
                             ),
                             rx.icon_button(
-                                rx.icon(tag="edit", size=16),
+                                rx.icon(tag="pencil", size=16),
                                 variant="ghost",
-                                color_scheme="slate",
+                                color_scheme="gray",
                             ),
                             spacing="2",
                         )
@@ -116,7 +116,7 @@ def add_device_modal() -> rx.Component:
                     rx.vstack(
                         rx.text("Asociar Cliente Propietario", size="2", weight="medium"),
                         rx.select(
-                            DeviceState.customers.map(lambda c: c["id"]),
+                            DeviceState.customer_ids,
                             name="customer_id",
                             placeholder="Selecciona el cliente",
                             width="100%",

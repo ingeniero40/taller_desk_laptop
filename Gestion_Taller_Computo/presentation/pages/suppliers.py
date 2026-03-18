@@ -25,7 +25,7 @@ def supplier_header() -> rx.Component:
                 rx.icon(tag="refresh-cw", size=18),
                 on_click=SupplierState.fetch_all_data,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -88,7 +88,7 @@ def supplier_table() -> rx.Component:
                     rx.table.cell(rx.text(s["address"], size="2", overflow="hidden", white_space="nowrap", text_overflow="ellipsis", width="150px")),
                     rx.table.cell(
                         rx.badge(
-                            "Activo" if s["is_active"] else "Inactivo",
+                            rx.cond(s["is_active"], "Activo", "Inactivo"),
                             color_scheme=s["status_color"],
                             variant="soft",
                         )
@@ -96,15 +96,15 @@ def supplier_table() -> rx.Component:
                     rx.table.cell(
                         rx.hstack(
                             rx.icon_button(
-                                rx.icon(tag="toggle-left" if not s["is_active"] else "toggle-right", size=16),
+                                rx.icon(tag=rx.cond(s["is_active"], "toggle-right", "toggle-left"), size=16),
                                 variant="soft",
-                                color_scheme="slate",
+                                color_scheme="gray",
                                 on_click=lambda: SupplierState.toggle_supplier_status(s["id"]),
                             ),
                             rx.icon_button(
-                                rx.icon(tag="edit", size=16),
+                                rx.icon(tag="pencil", size=16),
                                 variant="ghost",
-                                color_scheme="slate",
+                                color_scheme="gray",
                                 on_click=lambda: SupplierState.open_edit_supplier_modal(s),
                             ),
                             spacing="2",

@@ -24,7 +24,7 @@ def inventory_header() -> rx.Component:
                 rx.icon(tag="refresh-cw", size=18),
                 on_click=InventoryState.fetch_all_data,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -79,12 +79,12 @@ def product_table() -> rx.Component:
                 lambda p: rx.table.row(
                     rx.table.cell(rx.code(p["sku"], variant="ghost")),
                     rx.table.cell(rx.text(p["name"], weight="medium")),
-                    rx.table.cell(rx.badge(p["category"], color_scheme="slate", variant="outline")),
+                    rx.table.cell(rx.badge(p["category"], color_scheme="gray", variant="outline")),
                     rx.table.cell(rx.text(f"${p['sale_price']}", weight="bold")),
                     rx.table.cell(rx.text(p["stock"], color=rx.color(p["status_color"], 11))),
                     rx.table.cell(
                         rx.badge(
-                            "Stock Bajo" if p["stock"] <= p["min_stock"] else "En Stock",
+                            rx.cond(p["is_low_stock"], "Stock Bajo", "En Stock"),
                             color_scheme=p["status_color"],
                             variant="soft",
                         )
@@ -98,9 +98,9 @@ def product_table() -> rx.Component:
                                 on_click=lambda: InventoryState.open_adjust_stock_modal(p["id"]),
                             ),
                             rx.icon_button(
-                                rx.icon(tag="edit", size=16),
+                                rx.icon(tag="pencil", size=16),
                                 variant="ghost",
-                                color_scheme="slate",
+                                color_scheme="gray",
                             ),
                             spacing="2",
                         )
@@ -141,7 +141,7 @@ def add_product_modal() -> rx.Component:
                     rx.vstack(
                         rx.text("Proveedor", size="2", weight="medium"),
                         rx.select(
-                            InventoryState.suppliers.map(lambda s: s["id"]),
+                            InventoryState.supplier_ids,
                             name="supplier_id",
                             placeholder="Selecciona proveedor",
                             width="100%",
@@ -149,7 +149,7 @@ def add_product_modal() -> rx.Component:
                         width="100%",
                     ),
                     rx.hstack(
-                        rx.dialog.close(rx.button("Cancelar", variant="soft", color_scheme="slate")),
+                        rx.dialog.close(rx.button("Cancelar", variant="soft", color_scheme="gray")),
                         rx.button("Guardar Producto", type="submit", variant="solid", color_scheme="cyan"),
                         spacing="3",
                         width="100%",

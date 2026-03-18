@@ -21,10 +21,10 @@ def dashboard_header() -> rx.Component:
                 radius="large",
             ),
             rx.button(
-                rx.icon(tag="refresh-cw", size=18, animation="spin 3s linear infinite" if DashboardState.is_loading else "none"),
+                rx.icon(tag="refresh-cw", size=18, animation=rx.cond(DashboardState.is_loading, "spin 3s linear infinite", "none")),
                 on_click=DashboardState.fetch_metrics,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -39,26 +39,26 @@ def kpi_grid() -> rx.Component:
     return rx.grid(
         stat_card(
             "Ingresos del Mes", 
-            rx.text(f"${DashboardState.financials['total_collected']}"), 
+            rx.text("$", DashboardState.financials['total_collected']), 
             "dollar-sign", 
-            growth=rx.text(f"{DashboardState.financials['revenue_growth']}"), 
-            color="emerald"
+            growth=DashboardState.financials['revenue_growth'], 
+            color="green"
         ),
         stat_card(
             "Órdenes en Taller", 
-            rx.text(f"{DashboardState.summary['total_orders']}"), 
+            rx.text(DashboardState.summary['total_orders']), 
             "clipboard-list", 
             color="cyan"
         ),
         stat_card(
             "Reparos Finalizados", 
-            rx.text(f"{DashboardState.summary['COMPLETED']}"), 
-            "check-circle-2", 
+            rx.text(DashboardState.summary['COMPLETED']), 
+            "circle-check", 
             color="indigo"
         ),
         stat_card(
             "Alertas de Stock", 
-            rx.text(f"{rx.len(DashboardState.critical_stock)}"), 
+            rx.text(DashboardState.critical_stock.length()), 
             "package", 
             color="amber"
         ),
@@ -78,7 +78,7 @@ def recent_activity() -> rx.Component:
                     rx.foreach(
                         DashboardState.technicians,
                         lambda t: rx.hstack(
-                            rx.avatar(fallback=t["technician"][0:2].upper(), size="2"),
+                            rx.avatar(fallback=t["technician"], size="2"),
                             rx.vstack(
                                 rx.text(t["technician"], size="2", weight="medium"),
                                 rx.text(f"{t['status']}: {t['order_count']}", size="1", color=rx.color("slate", 10)),

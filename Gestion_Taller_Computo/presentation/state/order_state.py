@@ -68,14 +68,14 @@ class OrderState(rx.State):
 
     def _get_status_color(self, status: str) -> str:
         colors = {
-            "RECEIVED": "slate",
+            "RECEIVED": "gray",
             "IN_DIAGNOSIS": "amber",
             "IN_REPAIR": "cyan",
             "COMPLETED": "indigo",
-            "DELIVERED": "emerald",
+            "DELIVERED": "green",
             "CANCELLED": "red"
         }
-        return colors.get(status, "slate")
+        return colors.get(status, "gray")
 
     @rx.var
     def filtered_orders(self) -> List[Dict[str, Any]]:
@@ -96,6 +96,13 @@ class OrderState(rx.State):
         self.status_notes = ""
         self.new_price = order["price"]
         self.show_status_modal = True
+
+    @rx.event
+    def set_new_price(self, value: str):
+        try:
+            self.new_price = float(value) if value else 0.0
+        except ValueError:
+            self.new_price = 0.0
 
     @rx.event
     def update_order_status(self):

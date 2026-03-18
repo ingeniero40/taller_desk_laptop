@@ -89,6 +89,10 @@ class DeviceState(rx.State):
             d for d in self.devices 
             if q in d["brand"].lower() or q in d["model"].lower() or q in d["serial"].lower() or q in d["customer"].lower()
         ]
+    
+    @rx.var
+    def customer_ids(self) -> List[str]:
+        return [c["id"] for c in self.customers]
 
     @rx.event
     def open_add_device_modal(self):

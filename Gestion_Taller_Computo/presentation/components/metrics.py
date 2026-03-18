@@ -26,7 +26,7 @@ def stat_card(title: str, value: str, icon: str, growth: str = None, color: str 
                                 rx.text(f"{growth}%"),
                                 spacing="1",
                             ),
-                            color_scheme="emerald",
+                            color_scheme="green",
                             variant="soft",
                         ),
                     ),

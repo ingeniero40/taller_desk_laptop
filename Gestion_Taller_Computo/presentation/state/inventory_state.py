@@ -86,7 +86,8 @@ class InventoryState(rx.State):
             "min_stock": p.min_stock,
             "sale_price": p.sale_price,
             "cost_price": p.cost_price,
-            "status_color": "red" if p.stock <= p.min_stock else "cyan" if p.stock > 0 else "slate"
+            "status_color": "red" if p.stock <= p.min_stock else "cyan" if p.stock > 0 else "gray",
+            "is_low_stock": p.stock <= p.min_stock
         }
 
     def _supp_to_dict(self, s: Supplier) -> Dict[str, Any]:
@@ -119,6 +120,10 @@ class InventoryState(rx.State):
             prods = [p for p in prods if p["category"] == self.selected_category]
             
         return prods
+    
+    @rx.var
+    def supplier_ids(self) -> List[str]:
+        return [s["id"] for s in self.suppliers]
 
     # --- Acciones de Producto ---
     
@@ -173,6 +178,13 @@ class InventoryState(rx.State):
             return rx.window_alert(f"Error al guardar: {str(e)}")
 
     # --- Acciones de Stock ---
+    
+    @rx.event
+    def set_stock_adjustment(self, value: str):
+        try:
+            self.stock_adjustment = int(value) if value else 0
+        except ValueError:
+            self.stock_adjustment = 0
     
     @rx.event
     def open_adjust_stock_modal(self, product_id: str):

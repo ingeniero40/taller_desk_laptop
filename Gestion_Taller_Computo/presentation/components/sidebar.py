@@ -67,7 +67,7 @@ def sidebar(active_page: str = "/") -> rx.Component:
             # Configuración
             rx.vstack(
                 sidebar_item("Configuración", "settings", "/settings", active=(active_page == "/settings")),
-                sidebar_item("Soporte", "help-circle", "/support", active=(active_page == "/support")),
+                sidebar_item("Soporte", "circle-help", "/support", active=(active_page == "/support")),
                 spacing="2",
                 width="100%",
                 padding_bottom="24px",

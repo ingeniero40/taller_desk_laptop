@@ -23,7 +23,7 @@ def billing_header() -> rx.Component:
                 rx.icon(tag="refresh-cw", size=18),
                 on_click=BillingState.fetch_invoices,
                 variant="soft",
-                color_scheme="slate",
+                color_scheme="gray",
                 radius="large",
             ),
             spacing="3",
@@ -64,13 +64,13 @@ def invoice_table() -> rx.Component:
                             rx.icon_button(
                                 rx.icon(tag="dollar-sign", size=16),
                                 variant="soft",
-                                color_scheme="emerald",
+                                color_scheme="green",
                                 on_click=lambda: BillingState.open_payment_modal(i),
                             ),
                             rx.icon_button(
                                 rx.icon(tag="eye", size=16),
                                 variant="ghost",
-                                color_scheme="slate",
+                                color_scheme="gray",
                             ),
                             spacing="2",
                         )
@@ -119,7 +119,7 @@ def payment_modal() -> rx.Component:
                 ),
                 rx.hstack(
                     rx.dialog.close(rx.button("Cancelar", variant="soft")),
-                    rx.button("Confirmar Pago", on_click=BillingState.process_payment, color_scheme="emerald"),
+                    rx.button("Confirmar Pago", on_click=BillingState.process_payment, color_scheme="green"),
                     spacing="3",
                     width="100%",
                     justify="end",

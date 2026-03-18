@@ -64,7 +64,7 @@ class SupplierState(rx.State):
                     "phone": s.phone or "N/A",
                     "address": s.address or "Sin dirección",
                     "is_active": s.is_active,
-                    "status_color": "emerald" if s.is_active else "red"
+                    "status_color": "green" if s.is_active else "red"
                 })
                 
         except Exception as e:
