@@ -83,10 +83,10 @@ class Psycopg2Database(IDatabaseHandler):
         with cls.getConnection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, params)
-                if fetch:
-                    return cursor.fetchall()
+                results = cursor.fetchall() if fetch else None
                 conn.commit()
-                return None
+                return results
+
 
     @classmethod
     def testConnection(cls):
