@@ -1,5 +1,6 @@
 import reflex as rx
 from ..state.settings_state import SettingsState
+from ..state.auth_state import AuthState
 
 def sidebar_item(text: str, icon: str, href: str, active: bool = False) -> rx.Component:
     """Ítem de navegación individual con estilo premium."""
@@ -75,14 +76,17 @@ def sidebar(active_page: str = "/") -> rx.Component:
             
             rx.divider(width="80%", margin_y="16px", opacity=0.3, align_self="center"),
             
-            # Operaciones
-            rx.vstack(
-                rx.text("OPERACIONES", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px", letter_spacing="1.5px"),
-                sidebar_item("Inventario", "package", "/inventory", active=(active_page == "/inventory")),
-                sidebar_item("Facturación", "receipt-text", "/billing", active=(active_page == "/billing")),
-                sidebar_item("Proveedores", "truck", "/suppliers", active=(active_page == "/suppliers")),
-                spacing="2",
-                width="100%",
+            # Operaciones (Solo Admin y Recepcionista)
+            rx.cond(
+                AuthState.can_see_operations,
+                rx.vstack(
+                    rx.text("OPERACIONES", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px", letter_spacing="1.5px"),
+                    sidebar_item("Inventario", "package", "/inventory", active=(active_page == "/inventory")),
+                    sidebar_item("Facturación", "receipt-text", "/billing", active=(active_page == "/billing")),
+                    sidebar_item("Proveedores", "truck", "/suppliers", active=(active_page == "/suppliers")),
+                    spacing="2",
+                    width="100%",
+                ),
             ),
             
             rx.spacer(),
@@ -90,7 +94,10 @@ def sidebar(active_page: str = "/") -> rx.Component:
             # Footer / Configuración
             rx.vstack(
                 rx.divider(width="100%", margin_bottom="16px", opacity=0.3),
-                sidebar_item("Configuración", "settings", "/settings", active=(active_page == "/settings")),
+                rx.cond(
+                    AuthState.can_see_settings,
+                    sidebar_item("Configuración", "settings", "/settings", active=(active_page == "/settings")),
+                ),
                 sidebar_item("Centro de Soporte", "circle-help", "/support", active=(active_page == "/support")),
                 
                 # Dark Mode Switch
@@ -99,8 +106,8 @@ def sidebar(active_page: str = "/") -> rx.Component:
                     rx.text("Modo Oscuro", size="1", weight="medium", color=rx.color("slate", 10)),
                     rx.spacer(),
                     rx.switch(
-                        checked=SettingsState.dark_mode,
-                        on_change=SettingsState.toggle_dark_mode,
+                        checked=rx.cond(rx.color_mode == "dark", True, False),
+                        on_change=rx.toggle_color_mode,
                         radius="full",
                         color_scheme="cyan",
                     ),
@@ -110,6 +117,17 @@ def sidebar(active_page: str = "/") -> rx.Component:
                     border=f"1px solid {rx.color('slate', 4)}",
                     background=rx.color("black", 1),
                     margin_top="16px",
+                ),
+                
+                # Role Selector (Mock para desarrollo)
+                rx.select(
+                    ["ADMIN", "TECHNICIAN", "RECEPTIONIST"],
+                    value=AuthState.current_role,
+                    on_change=AuthState.set_role_mock,
+                    size="1",
+                    variant="soft",
+                    width="100%",
+                    margin_top="8px",
                 ),
                 spacing="2",
                 width="100%",

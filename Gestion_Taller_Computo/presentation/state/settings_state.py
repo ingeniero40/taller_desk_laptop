@@ -38,7 +38,6 @@ class SettingsState(rx.State):
     }
     
     # 3. Preferencias del Sistema
-    dark_mode: bool = False
     language: str = "Español"
     
     is_loading: bool = True
@@ -76,9 +75,6 @@ class SettingsState(rx.State):
     def set_workshop_info(self, key: str, value: str):
         self.workshop_info[key] = value
 
-    @rx.event
-    def toggle_dark_mode(self):
-        self.dark_mode = not self.dark_mode
 
     # -- Acciones de Usuarios --
     

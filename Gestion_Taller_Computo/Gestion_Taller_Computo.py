@@ -14,6 +14,7 @@ from .presentation.state.order_state import OrderState
 from .presentation.state.device_state import DeviceState
 from .presentation.state.supplier_state import SupplierState
 from .presentation.state.settings_state import SettingsState
+from .presentation.state.auth_state import AuthState
 
 def index() -> rx.Component:
     """Retorna la página de dashboard configurada."""
@@ -21,7 +22,7 @@ def index() -> rx.Component:
 
 app = rx.App(
     theme=rx.theme(
-        appearance=rx.cond(SettingsState.dark_mode, "dark", "light"),
+        appearance="inherit",
         has_background=True,
         radius="large",
         accent_color="cyan",
@@ -39,14 +40,14 @@ app.add_page(
     inventory_page,
     route="/inventory",
     title="Taller Desk & Laptop | Inventario",
-    on_load=InventoryState.on_load
+    on_load=[AuthState.check_operations, InventoryState.on_load]
 )
 
 app.add_page(
     billing_page,
     route="/billing",
     title="Taller Desk & Laptop | Facturación",
-    on_load=BillingState.on_load
+    on_load=[AuthState.check_operations, BillingState.on_load]
 )
 
 app.add_page(
@@ -67,14 +68,14 @@ app.add_page(
     suppliers_page,
     route="/suppliers",
     title="Taller Desk & Laptop | Proveedores",
-    on_load=SupplierState.on_load
+    on_load=[AuthState.check_operations, SupplierState.on_load]
 )
 
 app.add_page(
     settings_page,
     route="/settings",
     title="Taller Desk & Laptop | Ajustes",
-    on_load=SettingsState.on_load
+    on_load=[AuthState.check_admin, SettingsState.on_load]
 )
 
 app.add_page(
