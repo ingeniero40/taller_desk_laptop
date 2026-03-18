@@ -3,6 +3,7 @@ from typing import Optional
 import uuid
 import datetime
 from .base import BaseEntity
+from ..value_objects.billing_types import InvoiceStatus
 
 class Invoice(BaseEntity, table=True):
     __tablename__: str = "invoices"
@@ -19,5 +20,6 @@ class Invoice(BaseEntity, table=True):
     total: float = Field(default=0.0)
     amount_paid: float = Field(default=0.0)
     
-    status: str = Field(default="pending") # pending, partial, paid, cancelled
+    status: InvoiceStatus = Field(default=InvoiceStatus.PENDING, nullable=False)
     due_date: Optional[datetime.datetime] = Field(default=None)
+
