@@ -31,8 +31,10 @@ def test_work_order_flow():
     try:
         # A. Crear Técnico y Cliente
         print("A. Creando técnicos y clientes...")
-        tech = user_mgr.create_user(f"tech_{uuid.uuid4().hex[:4]}", "t@t.com", "h", "Pedro Técnico", UserRole.TECHNICIAN)
-        cust = user_mgr.create_user(f"cust_{uuid.uuid4().hex[:4]}", "c@c.com", "h", "Maria Cliente", UserRole.CUSTOMER)
+        tech_id = uuid.uuid4().hex[:4]
+        cust_id = uuid.uuid4().hex[:4]
+        tech = user_mgr.create_user(f"tech_{tech_id}", f"t_{tech_id}@test.com", "h", "Pedro Técnico", UserRole.TECHNICIAN)
+        cust = user_mgr.create_user(f"cust_{cust_id}", f"c_{cust_id}@test.com", "h", "Maria Cliente", UserRole.CUSTOMER)
         
         # B. Registrar dispositivo
         print(f"B. Registrando dispositivo para cliente {cust.full_name}...")

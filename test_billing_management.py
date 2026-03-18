@@ -34,7 +34,8 @@ def test_billing_flow():
     try:
         # A. Crear Cliente y Dispositivo
         print("A. Creando cliente y dispositivo para facturar...")
-        cust = user_mgr.create_user(f"bill_{uuid.uuid4().hex[:4]}", "b@b.com", "h", "Luis Facturas", UserRole.CUSTOMER)
+        bill_id = uuid.uuid4().hex[:4]
+        cust = user_mgr.create_user(f"bill_{bill_id}", f"b_{bill_id}@test.com", "h", "Luis Facturas", UserRole.CUSTOMER)
         dev = device_mgr.register_device("Apple", "MacBook Pro M1", f"SN-MBP-{uuid.uuid4().hex[:4].upper()}", cust.id)
         
         # B. Crear Orden y Cerrarla para Cobro
