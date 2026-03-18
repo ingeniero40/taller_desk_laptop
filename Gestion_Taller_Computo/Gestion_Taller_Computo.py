@@ -3,10 +3,12 @@ from .presentation.pages.dashboard import index as dashboard_page
 from .presentation.pages.inventory import inventory_page
 from .presentation.pages.billing import billing_page
 from .presentation.pages.orders import orders_page
+from .presentation.pages.devices import devices_page
 from .presentation.state.dashboard_state import DashboardState
 from .presentation.state.inventory_state import InventoryState
 from .presentation.state.billing_state import BillingState
 from .presentation.state.order_state import OrderState
+from .presentation.state.device_state import DeviceState
 
 def index() -> rx.Component:
     """Retorna la página de dashboard configurada."""
@@ -47,5 +49,12 @@ app.add_page(
     route="/orders",
     title="Taller Desk & Laptop | Órdenes",
     on_load=OrderState.on_load
+)
+
+app.add_page(
+    devices_page,
+    route="/devices",
+    title="Taller Desk & Laptop | Dispositivos",
+    on_load=DeviceState.on_load
 )
 
