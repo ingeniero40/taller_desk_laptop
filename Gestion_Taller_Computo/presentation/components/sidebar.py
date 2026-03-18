@@ -26,7 +26,7 @@ def sidebar_item(text: str, icon: str, href: str, active: bool = False) -> rx.Co
         width="100%",
     )
 
-def sidebar() -> rx.Component:
+def sidebar(active_page: str = "/") -> rx.Component:
     """Barra lateral principal con diseño premium."""
     return rx.flex(
         rx.vstack(
@@ -43,9 +43,9 @@ def sidebar() -> rx.Component:
             # Navegación Principal
             rx.vstack(
                 rx.text("PRINCIPAL", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px"),
-                sidebar_item("Dashboard", "home", "/#", active=True),
-                sidebar_item("Ordenes", "clipboard-list", "/#"),
-                sidebar_item("Dispositivos", "laptop", "/#"),
+                sidebar_item("Dashboard", "home", "/", active=(active_page == "/")),
+                sidebar_item("Ordenes", "clipboard-list", "/orders", active=(active_page == "/orders")), # Próximamente
+                sidebar_item("Dispositivos", "laptop", "/devices", active=(active_page == "/devices")), # Próximamente
                 spacing="2",
                 width="100%",
             ),
@@ -55,9 +55,9 @@ def sidebar() -> rx.Component:
             # Negocio e Inventario
             rx.vstack(
                 rx.text("GESTIÓN", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px"),
-                sidebar_item("Inventario", "package", "/#"),
-                sidebar_item("Facturación", "receipt-text", "/#"),
-                sidebar_item("Proveedores", "truck", "/#"),
+                sidebar_item("Inventario", "package", "/inventory", active=(active_page == "/inventory")),
+                sidebar_item("Facturación", "receipt-text", "/billing", active=(active_page == "/billing")), # Próximamente
+                sidebar_item("Proveedores", "truck", "/suppliers", active=(active_page == "/suppliers")), # Próximamente
                 spacing="2",
                 width="100%",
             ),
@@ -66,8 +66,8 @@ def sidebar() -> rx.Component:
             
             # Configuración
             rx.vstack(
-                sidebar_item("Configuración", "settings", "/#"),
-                sidebar_item("Soporte", "help-circle", "/#"),
+                sidebar_item("Configuración", "settings", "/settings", active=(active_page == "/settings")),
+                sidebar_item("Soporte", "help-circle", "/support", active=(active_page == "/support")),
                 spacing="2",
                 width="100%",
                 padding_bottom="24px",

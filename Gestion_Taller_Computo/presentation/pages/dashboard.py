@@ -135,7 +135,7 @@ def recent_activity() -> rx.Component:
 def index() -> rx.Component:
     """Contenedor principal del Dashboard Administrativo."""
     return rx.hstack(
-        sidebar(),
+        sidebar("/"),
         rx.container(
             rx.vstack(
                 dashboard_header(),
