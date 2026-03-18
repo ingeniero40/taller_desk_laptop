@@ -7,6 +7,7 @@ from .presentation.pages.devices import devices_page
 from .presentation.pages.suppliers import suppliers_page
 from .presentation.pages.settings import settings_page
 from .presentation.pages.support import support_page
+from .presentation.pages.agenda import agenda_page
 from .presentation.state.dashboard_state import DashboardState
 from .presentation.state.inventory_state import InventoryState
 from .presentation.state.billing_state import BillingState
@@ -15,6 +16,7 @@ from .presentation.state.device_state import DeviceState
 from .presentation.state.supplier_state import SupplierState
 from .presentation.state.settings_state import SettingsState
 from .presentation.state.auth_state import AuthState
+from .presentation.state.agenda_state import AgendaState
 
 def index() -> rx.Component:
     """Retorna la página de dashboard configurada."""
@@ -82,5 +84,12 @@ app.add_page(
     support_page,
     route="/support",
     title="Taller Desk & Laptop | Soporte",
+)
+
+app.add_page(
+    agenda_page,
+    route="/agenda",
+    title="Taller Desk & Laptop | Agenda",
+    on_load=AgendaState.on_load
 )
 

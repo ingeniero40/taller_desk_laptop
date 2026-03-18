@@ -2,3 +2,4 @@ reflex==0.8.28
 psycopg2-binary==2.9.11
 python-dotenv==1.2.2
 sqlmodel==0.0.37
+uvicorn[standard]==0.42.0
