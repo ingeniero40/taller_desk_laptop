@@ -1,9 +1,10 @@
 from enum import Enum
 
 class WorkOrderStatus(str, Enum):
-    RECEIVED = "received"
-    IN_DIAGNOSIS = "in_diagnosis"
-    IN_REPAIR = "in_repair"
-    ON_HOLD = "on_hold"
-    COMPLETED = "completed"
-    DELIVERED = "delivered"
+    RECEIVED = "RECEIVED"
+    IN_DIAGNOSIS = "IN_DIAGNOSIS"
+    IN_REPAIR = "IN_REPAIR"
+    ON_HOLD = "ON_HOLD"
+    COMPLETED = "COMPLETED"
+    DELIVERED = "DELIVERED"
+
