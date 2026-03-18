@@ -1,18 +1,14 @@
 import reflex as rx
 from ..state.supplier_state import SupplierState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def supplier_header() -> rx.Component:
     """Encabezado superior de proveedores."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Catálogo de Proveedores", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Directorio de socios comerciales y fuentes de suministro.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
-            #rx.label(rx.switch(checked=SupplierState.show_inactive, on_change=SupplierState.toggle_inactive_filter), "Mostrar Inactivos"),
+    return page_header(
+        "Catálogo de Proveedores",
+        "Directorio de socios comerciales y fuentes de suministro estratégico.",
+        actions=[
             rx.button(
                 rx.icon(tag="plus", size=18),
                 rx.text("Nuevo Proveedor"),
@@ -28,11 +24,7 @@ def supplier_header() -> rx.Component:
                 color_scheme="gray",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def supplier_filter_bar() -> rx.Component:

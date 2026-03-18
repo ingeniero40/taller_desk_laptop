@@ -1,17 +1,14 @@
 import reflex as rx
 from ..state.billing_state import BillingState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def billing_header() -> rx.Component:
     """Encabezado superior de facturación."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Facturación y Cobros", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Seguimiento de ingresos, saldos y pagos de clientes.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
+    return page_header(
+        "Facturación y Cobros",
+        "Seguimiento de ingresos, saldos y pagos de clientes.",
+        actions=[
             rx.button(
                 rx.icon(tag="receipt", size=18),
                 rx.text("Nueva Factura"),
@@ -26,11 +23,7 @@ def billing_header() -> rx.Component:
                 color_scheme="gray",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def invoice_table() -> rx.Component:

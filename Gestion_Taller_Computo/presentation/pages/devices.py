@@ -1,17 +1,14 @@
 import reflex as rx
 from ..state.device_state import DeviceState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def device_header() -> rx.Component:
     """Encabezado superior de dispositivos."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Catálogo de Dispositivos", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Equipos registrados y su historial técnico.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
+    return page_header(
+        "Catálogo de Dispositivos",
+        "Equipos registrados y su historial técnico operacional.",
+        actions=[
             rx.button(
                 rx.icon(tag="plus", size=18),
                 rx.text("Registrar Dispositivo"),
@@ -27,11 +24,7 @@ def device_header() -> rx.Component:
                 color_scheme="gray",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def device_filter_bar() -> rx.Component:

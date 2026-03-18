@@ -1,20 +1,18 @@
 import reflex as rx
 from ..state.order_state import OrderState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def order_header() -> rx.Component:
     """Encabezado superior de órdenes de trabajo."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Órdenes de Trabajo", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Seguimiento en tiempo real de reparaciones y diagnósticos.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
+    return page_header(
+        "Órdenes de Trabajo",
+        "Seguimiento en tiempo real de reparaciones y diagnósticos.",
+        actions=[
             rx.button(
                 rx.icon(tag="plus", size=18),
                 rx.text("Nueva Orden"),
+                on_click=OrderState.open_new_order_modal,
                 color_scheme="cyan",
                 variant="solid",
                 radius="large",
@@ -26,11 +24,7 @@ def order_header() -> rx.Component:
                 color_scheme="gray",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def order_table() -> rx.Component:
@@ -137,6 +131,74 @@ def status_update_modal() -> rx.Component:
         on_open_change=OrderState.set_show_status_modal,
     )
 
+def new_order_modal() -> rx.Component:
+    """Modal para la apertura de una nueva orden de servicio."""
+    return rx.dialog.root(
+        rx.dialog.content(
+            rx.dialog.title("Apertura de Órden de Servicio"),
+            rx.dialog.description("Vincule un cliente y su equipo para iniciar el proceso."),
+            rx.vstack(
+                rx.vstack(
+                    rx.text("Cliente", size="2", weight="medium"),
+                    rx.select(
+                        OrderState.customer_ids,
+                        on_change=OrderState.set_selected_customer,
+                        value=OrderState.selected_customer_id,
+                        placeholder="Seleccione un cliente",
+                        width="100%",
+                    ),
+                    width="100%",
+                ),
+                rx.vstack(
+                    rx.text("Equipo / Dispositivo", size="2", weight="medium"),
+                    rx.select(
+                        OrderState.device_ids,
+                        on_change=OrderState.set_selected_device_id,
+                        value=OrderState.selected_device_id,
+                        placeholder="Seleccione el equipo",
+                        width="100%",
+                        disabled=OrderState.customer_devices.length() == 0,
+                    ),
+                    rx.cond(
+                        OrderState.customer_devices.length() == 0,
+                        rx.text("Este cliente no tiene equipos registrados.", size="1", color=rx.color("red", 9)),
+                    ),
+                    width="100%",
+                ),
+                rx.vstack(
+                    rx.text("Descripción del Problema / Falla", size="2", weight="medium"),
+                    rx.text_area(
+                        placeholder="Ej: No enciende, pantalla quebrada, limpieza...",
+                        on_change=OrderState.set_order_description,
+                        value=OrderState.order_description,
+                        width="100%",
+                        height="100px",
+                    ),
+                    width="100%",
+                ),
+                rx.hstack(
+                    rx.dialog.close(rx.button("Cancelar", variant="soft")),
+                    rx.button(
+                        "Abrir Orden", 
+                        on_click=OrderState.save_new_order, 
+                        color_scheme="cyan",
+                        disabled=OrderState.selected_device_id == "",
+                    ),
+                    spacing="3",
+                    width="100%",
+                    justify="end",
+                    padding_top="16px",
+                ),
+                spacing="4",
+                width="100%",
+            ),
+            max_width="450px",
+            border_radius="24px",
+        ),
+        open=OrderState.show_order_modal,
+        on_open_change=OrderState.set_show_order_modal,
+    )
+
 def orders_page() -> rx.Component:
     """Layout principal de la página de órdenes."""
     return rx.hstack(
@@ -146,6 +208,7 @@ def orders_page() -> rx.Component:
                 order_header(),
                 order_table(),
                 status_update_modal(),
+                new_order_modal(),
                 spacing="5",
                 padding_bottom="48px",
                 width="100%",

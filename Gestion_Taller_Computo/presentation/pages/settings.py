@@ -1,17 +1,14 @@
 import reflex as rx
 from ..state.settings_state import SettingsState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def settings_header() -> rx.Component:
     """Encabezado superior de configuración."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Configuración del Sistema", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Ajustes generales, cuentas de usuario y personalización operativa.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
+    return page_header(
+        "Configuración del Sistema",
+        "Ajustes generales, cuentas de usuario y personalización operativa avanzada.",
+        actions=[
             rx.button(
                 rx.icon(tag="save", size=18),
                 rx.text("Guardar Cambios"),
@@ -19,11 +16,7 @@ def settings_header() -> rx.Component:
                 variant="solid",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def general_tab() -> rx.Component:

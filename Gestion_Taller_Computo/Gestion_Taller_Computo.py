@@ -6,6 +6,7 @@ from .presentation.pages.orders import orders_page
 from .presentation.pages.devices import devices_page
 from .presentation.pages.suppliers import suppliers_page
 from .presentation.pages.settings import settings_page
+from .presentation.pages.support import support_page
 from .presentation.state.dashboard_state import DashboardState
 from .presentation.state.inventory_state import InventoryState
 from .presentation.state.billing_state import BillingState
@@ -20,7 +21,7 @@ def index() -> rx.Component:
 
 app = rx.App(
     theme=rx.theme(
-        appearance="light",
+        appearance=rx.cond(SettingsState.dark_mode, "dark", "light"),
         has_background=True,
         radius="large",
         accent_color="cyan",
@@ -74,5 +75,11 @@ app.add_page(
     route="/settings",
     title="Taller Desk & Laptop | Ajustes",
     on_load=SettingsState.on_load
+)
+
+app.add_page(
+    support_page,
+    route="/support",
+    title="Taller Desk & Laptop | Soporte",
 )
 

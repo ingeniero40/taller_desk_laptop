@@ -2,36 +2,22 @@ import reflex as rx
 from ..state.dashboard_state import DashboardState
 from ..components.sidebar import sidebar
 from ..components.metrics import stat_card
+from ..components.page_header import page_header
 
 def dashboard_header() -> rx.Component:
     """Encabezado superior del dashboard."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Dashboard Administrativo", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Monitoreo general del taller y rendimiento operativo.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
-            rx.button(
-                rx.icon(tag="plus", size=18),
-                rx.text("Nueva Orden"),
-                color_scheme="cyan",
-                variant="solid",
-                radius="large",
-            ),
+    return page_header(
+        "Dashboard Administrativo",
+        "Monitoreo general del taller y rendimiento operativo.",
+        actions=[
             rx.button(
                 rx.icon(tag="refresh-cw", size=18, animation=rx.cond(DashboardState.is_loading, "spin 3s linear infinite", "none")),
                 on_click=DashboardState.fetch_metrics,
                 variant="soft",
                 color_scheme="gray",
                 radius="large",
-            ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+            )
+        ]
     )
 
 def kpi_grid() -> rx.Component:

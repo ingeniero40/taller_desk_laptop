@@ -1,17 +1,14 @@
 import reflex as rx
 from ..state.inventory_state import InventoryState
 from ..components.sidebar import sidebar
+from ..components.page_header import page_header
 
 def inventory_header() -> rx.Component:
     """Encabezado superior de la gestión de inventario."""
-    return rx.flex(
-        rx.vstack(
-            rx.heading("Gestión de Inventario", size="8", weight="bold", color=rx.color("slate", 12)),
-            rx.text("Catalogo maestro de repuestos y equipos.", color=rx.color("slate", 10), size="3"),
-            spacing="1",
-        ),
-        rx.spacer(),
-        rx.hstack(
+    return page_header(
+        "Gestión de Inventario",
+        "Catálogo maestro de repuestos y equipos para reparaciones.",
+        actions=[
             rx.button(
                 rx.icon(tag="plus", size=18),
                 rx.text("Nuevo Producto"),
@@ -27,11 +24,7 @@ def inventory_header() -> rx.Component:
                 color_scheme="gray",
                 radius="large",
             ),
-            spacing="3",
-        ),
-        width="100%",
-        align="center",
-        padding_y="24px",
+        ]
     )
 
 def filter_bar() -> rx.Component:
