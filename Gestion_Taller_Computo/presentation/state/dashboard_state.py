@@ -25,8 +25,10 @@ class DashboardState(rx.State):
     
     technicians: List[Dict[str, Any]] = []
     critical_stock: List[Dict[str, Any]] = []
+    recent_orders: List[Dict[str, Any]] = []
     
     is_loading: bool = True
+
 
     def on_load(self):
         """Inicializa los datos al cargar la página."""
@@ -56,6 +58,8 @@ class DashboardState(rx.State):
             dash_data = mgr.get_workshop_dashboard_data()
             self.technicians = dash_data["technician_performance"]
             self.critical_stock = dash_data["critical_stock_items"]
+            self.recent_orders = repo.get_recent_work_orders(limit=10)
+
             
         except Exception as e:
             print(f"Error cargando dashboard: {e}")

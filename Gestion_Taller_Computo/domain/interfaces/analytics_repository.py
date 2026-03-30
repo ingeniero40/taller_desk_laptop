@@ -26,3 +26,9 @@ class IAnalyticsRepository(ABC):
     def get_top_moving_products(self, limit: int = 5) -> List[Dict[str, Any]]:
         """Productos más utilizados o vendidos."""
         pass
+
+    @abstractmethod
+    def get_recent_work_orders(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Obtiene las órdenes de trabajo más recientes con detalles de cliente y dispositivo."""
+        pass
+

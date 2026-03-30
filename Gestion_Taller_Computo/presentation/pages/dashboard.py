@@ -118,16 +118,73 @@ def recent_activity() -> rx.Component:
         width="100%",
     )
 
+def recent_orders_table() -> rx.Component:
+    """Tabla detallada de las últimas órdenes ingresadas."""
+    return rx.card(
+        rx.vstack(
+            rx.hstack(
+                rx.heading("Órdenes Recientes", size="5", weight="bold"),
+                rx.spacer(),
+                rx.button("Ver Todas", variant="ghost", color_scheme="cyan", size="2"),
+                width="100%",
+                align="center",
+                margin_bottom="16px",
+            ),
+            rx.table.root(
+                rx.table.header(
+                    rx.table.row(
+                        rx.table.column_header_cell("Ticket"),
+                        rx.table.column_header_cell("Dispositivo"),
+                        rx.table.column_header_cell("Cliente"),
+                        rx.table.column_header_cell("Fecha"),
+                        rx.table.column_header_cell("Estado"),
+                    ),
+                ),
+                rx.table.body(
+                    rx.foreach(
+                        DashboardState.recent_orders,
+                        lambda order: rx.table.row(
+                            rx.table.row_header_cell(order["ticket"]),
+                            rx.table.cell(order["device"]),
+                            rx.table.cell(order["customer"]),
+                            rx.table.cell(order["date"]),
+                            rx.table.cell(
+                                rx.badge(
+                                    order["status"],
+                                    color_scheme=rx.match(
+                                        order["status"],
+                                        ("COMPLETED", "emerald"),
+                                        ("RECEIVED", "blue"),
+                                        ("IN_REPAIR", "amber"),
+                                        "slate",
+                                    ),
+                                    variant="soft",
+                                )
+                            ),
+                        ),
+                    ),
+                ),
+                width="100%",
+            ),
+            width="100%",
+        ),
+        padding="24px",
+        border_radius="16px",
+        background=rx.color("slate", 3),
+        margin_top="32px",
+    )
+
 def index() -> rx.Component:
     """Contenedor principal del Dashboard Administrativo."""
     return rx.hstack(
-        sidebar("/"),
+        sidebar(),
         rx.container(
             rx.vstack(
                 dashboard_header(),
                 kpi_grid(),
                 rx.heading("Actividad del Taller", size="5", weight="bold", margin_top="32px", color=rx.color("slate", 11)),
                 recent_activity(),
+                recent_orders_table(),
                 spacing="5",
                 padding_bottom="48px",
                 width="100%",

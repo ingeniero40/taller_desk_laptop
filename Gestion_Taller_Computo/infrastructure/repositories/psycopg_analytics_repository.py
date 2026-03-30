@@ -88,3 +88,29 @@ class Psycopg2AnalyticsRepository(IAnalyticsRepository):
                 "category": row[4]
             })
         return top_list
+
+    def get_recent_work_orders(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Une las órdenes con dispositivos y clientes.
+        """
+        query = """
+            SELECT wo.ticket_number, d.brand, d.model, u.full_name, wo.status, wo.created_at
+            FROM work_orders wo
+            JOIN devices d ON wo.device_id = d.id
+            JOIN users u ON d.owner_id = u.id
+            ORDER BY wo.created_at DESC
+            LIMIT %s;
+        """
+        results = self.db.executeRawQuery(query, (limit,), fetch=True)
+        
+        recent_orders = []
+        for row in results:
+            recent_orders.append({
+                "ticket": row[0],
+                "device": f"{row[1]} {row[2]}",
+                "customer": row[3],
+                "status": row[4],
+                "date": row[5].strftime("%Y-%m-%d %H:%M") if row[5] else "N/A"
+            })
+        return recent_orders
+

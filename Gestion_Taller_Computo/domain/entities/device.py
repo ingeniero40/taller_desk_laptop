@@ -13,5 +13,8 @@ class Device(BaseEntity, table=True):
     # Relación con el Cliente (User con rol CUSTOMER)
     customer_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
     
-    # Si quisiéramos navegación bidireccional (requiere importar User en runtime o usar strings)
-    # customer: "User" = Relationship(back_populates="devices")
+    # Campos de Admisión
+    physical_condition: Optional[str] = Field(default=None)      # Descripción del estado físico
+    accessories: Optional[str] = Field(default=None)              # Lista de accesorios entregados
+    photo_url: Optional[str] = Field(default=None)                # URL o path de foto de admisión
+    device_type: Optional[str] = Field(default="Laptop/PC")       # Tipo de equipo
