@@ -87,11 +87,20 @@ def supplier_table() -> rx.Component:
                     ),
                     rx.table.cell(
                         rx.hstack(
-                            rx.icon_button(
-                                rx.icon(tag=rx.cond(s["is_active"], "toggle-right", "toggle-left"), size=16),
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=lambda: SupplierState.toggle_supplier_status(s["id"]),
+                            rx.cond(
+                                s["is_active"],
+                                rx.icon_button(
+                                    rx.icon(tag="toggle-right", size=16),
+                                    variant="soft",
+                                    color_scheme="green",
+                                    on_click=lambda: SupplierState.toggle_supplier_status(s["id"]),
+                                ),
+                                rx.icon_button(
+                                    rx.icon(tag="toggle-left", size=16),
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    on_click=lambda: SupplierState.toggle_supplier_status(s["id"]),
+                                ),
                             ),
                             rx.icon_button(
                                 rx.icon(tag="pencil", size=16),

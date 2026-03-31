@@ -9,6 +9,7 @@ from .presentation.pages.settings import settings_page
 from .presentation.pages.support import support_page
 from .presentation.pages.agenda import agenda_page
 from .presentation.pages.admission import admission_page
+from .presentation.pages.tracking import tracking_page
 from .presentation.state.dashboard_state import DashboardState
 from .presentation.state.inventory_state import InventoryState
 from .presentation.state.billing_state import BillingState
@@ -19,6 +20,7 @@ from .presentation.state.settings_state import SettingsState
 from .presentation.state.auth_state import AuthState
 from .presentation.state.agenda_state import AgendaState
 from .presentation.state.admission_state import AdmissionState
+from .presentation.state.tracking_state import TrackingState
 
 def index() -> rx.Component:
     """Retorna la página de dashboard configurada."""
@@ -102,3 +104,9 @@ app.add_page(
     on_load=AuthState.check_operations
 )
 
+app.add_page(
+    tracking_page,
+    route="/tracking",
+    title="Taller Desk & Laptop | Seguimiento",
+    on_load=TrackingState.on_load
+)

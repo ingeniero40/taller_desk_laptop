@@ -69,6 +69,7 @@ def sidebar(active_page: str = "/") -> rx.Component:
                 rx.text("SISTEMA", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px", letter_spacing="1.5px"),
                 sidebar_item("Dashboard", "layout-dashboard", "/", active=(active_page == "/")),
                 sidebar_item("Órdenes", "clipboard-list", "/orders", active=(active_page == "/orders")),
+                sidebar_item("Seguimiento", "activity", "/tracking", active=(active_page == "/tracking")),
                 sidebar_item("Admisión", "package-plus", "/admission", active=(active_page == "/admission")),
                 sidebar_item("Agenda", "calendar-days", "/agenda", active=(active_page == "/agenda")),
                 sidebar_item("Dispositivos", "laptop", "/devices", active=(active_page == "/devices")),
