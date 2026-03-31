@@ -125,6 +125,18 @@ class InventoryState(rx.State):
     def supplier_ids(self) -> List[str]:
         return [s["id"] for s in self.suppliers]
 
+    @rx.var
+    def low_stock_count(self) -> int:
+        """Contador rápido de productos con stock bajo o nulo."""
+        return len([p for p in self.products if p["is_low_stock"]])
+
+    @rx.var
+    def total_value(self) -> str:
+        """Valor total estimado del inventario (Costo * Stock)."""
+        total = sum(float(p["cost_price"]) * int(p["stock"]) for p in self.products)
+        return f"${total:,.2f}"
+
+
     # --- Acciones de Producto ---
     
     @rx.event

@@ -59,6 +59,12 @@ class AdmissionState(rx.State):
     customer_devices: List[Dict[str, str]] = []
     selected_device_id: str = ""
 
+    @rx.var
+    def device_options(self) -> List[str]:
+        """Retorna solo los nombres/labels de los dispositivos para el rx.select."""
+        return [d["label"] for d in self.customer_devices]
+
+
     # ── PASO 3: Problema ─────────────────────────────────────────────────
     problem_description: str = ""
     problem_priority: str = OrderPriority.MEDIUM.value
@@ -236,7 +242,12 @@ class AdmissionState(rx.State):
 
     @rx.event
     def set_selected_device(self, val: str):
-        self.selected_device_id = val
+        # El select devuelve el label, buscamos su ID correspondiente
+        for d in self.customer_devices:
+            if d["label"] == val:
+                self.selected_device_id = d["id"]
+                break
+
 
     # ── PASO 3 Eventos ───────────────────────────────────────────────────
 

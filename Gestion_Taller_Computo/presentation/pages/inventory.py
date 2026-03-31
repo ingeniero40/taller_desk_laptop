@@ -3,6 +3,33 @@ from ..state.inventory_state import InventoryState
 from ..components.sidebar import sidebar
 from ..components.page_header import page_header
 
+def stat_mini(label: str, value: rx.Var, icon: str, color: str) -> rx.Component:
+    """Indicadores rápidos sobre la tabla de inventario con diseño Glassmorphism."""
+    return rx.hstack(
+        rx.box(
+            rx.icon(tag=icon, size=18, color=rx.color(color, 9)),
+            padding="10px", 
+            border_radius="10px",
+            background=rx.color(color, 3),
+            display="flex",
+            align_items="center",
+            justify_content="center",
+        ),
+        rx.vstack(
+            rx.text(label, size="1", color=rx.color("slate", 10), weight="medium"),
+            rx.text(value, size="4", weight="bold", letter_spacing="-0.02em"),
+            spacing="0",
+        ),
+        spacing="3",
+        padding="12px 20px",
+        border_radius="16px",
+        background=rx.color("slate", 1),
+        border=f"1px solid {rx.color('slate', 4)}",
+        min_width="160px",
+        transition="transform 0.2s ease",
+        _hover={"transform": "translateY(-2px)", "box_shadow": "0 4px 12px rgba(0,0,0,0.05)"},
+    )
+
 def inventory_header() -> rx.Component:
     """Encabezado superior de la gestión de inventario."""
     return page_header(
@@ -16,6 +43,7 @@ def inventory_header() -> rx.Component:
                 color_scheme="cyan",
                 variant="solid",
                 radius="large",
+                size="3",
             ),
             rx.button(
                 rx.icon(tag="refresh-cw", size=18),
@@ -23,140 +51,204 @@ def inventory_header() -> rx.Component:
                 variant="soft",
                 color_scheme="gray",
                 radius="large",
+                size="3",
             ),
         ]
     )
 
 def filter_bar() -> rx.Component:
-    """Barra de búsqueda y filtros para el inventario."""
-    return rx.hstack(
-        rx.input(
-            rx.input.slot(rx.icon(tag="search", size=18, color=rx.color("slate", 9))),
-            placeholder="Buscar por SKU o Nombre...",
-            width="320px",
-            variant="soft",
-            radius="large",
-            value=InventoryState.search_query,
-            on_change=InventoryState.set_search_query,
+    """Barra de búsqueda y filtros con KPIs integrados."""
+    return rx.vstack(
+        rx.hstack(
+            stat_mini("Items Críticos", InventoryState.low_stock_count, "alert-triangle", "red"),
+            stat_mini("Valor Capital", InventoryState.total_value, "banknote", "teal"),
+
+            stat_mini("Total SKUs", InventoryState.products.length(), "hash", "blue"),
+
+            spacing="4",
+            width="100%",
+            justify="start",
+            padding_bottom="12px",
         ),
-        rx.select(
-            ["Todas", "Hardware", "Software", "Periféricos", "Repuestos", "Otros"],
-            placeholder="Categoría",
-            variant="soft",
-            radius="large",
-            value=InventoryState.selected_category,
-            on_change=InventoryState.set_selected_category,
+        rx.hstack(
+            rx.box(
+                rx.input(
+                    rx.input.slot(rx.icon(tag="search", size=18, color=rx.color("slate", 9))),
+                    placeholder="Buscar SKU o nombre de producto...",
+                    width="100%",
+                    variant="soft",
+                    radius="large",
+                    size="3",
+                    value=InventoryState.search_query,
+                    on_change=InventoryState.set_search_query,
+                    background=rx.color("slate", 1),
+                ),
+                flex="1",
+            ),
+            rx.select(
+                InventoryState.categories,
+                placeholder="Filtrar por Categoría",
+                variant="soft",
+                radius="large",
+                size="3",
+                value=InventoryState.selected_category,
+                on_change=InventoryState.set_selected_category,
+                background=rx.color("slate", 1),
+            ),
+            width="100%",
+            spacing="3",
         ),
-        spacing="3",
         width="100%",
+        spacing="2",
         margin_bottom="16px",
     )
 
 def product_table() -> rx.Component:
-    """Tabla refinada de productos."""
-    return rx.table.root(
-        rx.table.header(
-            rx.table.row(
-                rx.table.column_header_cell("SKU"),
-                rx.table.column_header_cell("Producto"),
-                rx.table.column_header_cell("Categoría"),
-                rx.table.column_header_cell("Precio Venta"),
-                rx.table.column_header_cell("Stock"),
-                rx.table.column_header_cell("Estado"),
-                rx.table.column_header_cell("Acciones"),
-            )
-        ),
-        rx.table.body(
-            rx.foreach(
-                InventoryState.filtered_products,
-                lambda p: rx.table.row(
-                    rx.table.cell(rx.code(p["sku"], variant="ghost")),
-                    rx.table.cell(rx.text(p["name"], weight="medium")),
-                    rx.table.cell(rx.badge(p["category"], color_scheme="gray", variant="outline")),
-                    rx.table.cell(rx.text(f"${p['sale_price']}", weight="bold")),
-                    rx.table.cell(rx.text(p["stock"], color=rx.color(p["status_color"], 11))),
-                    rx.table.cell(
-                        rx.badge(
-                            rx.cond(p["is_low_stock"], "Stock Bajo", "En Stock"),
-                            color_scheme=p["status_color"],
-                            variant="soft",
-                        )
-                    ),
-                    rx.table.cell(
-                        rx.hstack(
-                            rx.icon_button(
-                                rx.icon(tag="arrow-up-down", size=16),
-                                variant="soft",
-                                color_scheme="cyan",
-                                on_click=lambda: InventoryState.open_adjust_stock_modal(p["id"]),
-                            ),
-                            rx.icon_button(
-                                rx.icon(tag="pencil", size=16),
-                                variant="ghost",
-                                color_scheme="gray",
-                            ),
-                            spacing="2",
-                        )
-                    ),
-                    align="center",
-                    _hover={"background": rx.color("slate", 3)},
+    """Tabla refinada de productos con estados visuales mejorados."""
+    return rx.box(
+        rx.table.root(
+            rx.table.header(
+                rx.table.row(
+                    rx.table.column_header_cell("SKU", width="120px"),
+                    rx.table.column_header_cell("Producto"),
+                    rx.table.column_header_cell("Categoría", width="150px"),
+                    rx.table.column_header_cell("Precio Venta", width="150px"),
+                    rx.table.column_header_cell("Stock", width="100px"),
+                    rx.table.column_header_cell("Estado", width="120px"),
+                    rx.table.column_header_cell("", width="100px"), # Acciones
                 )
-            )
+            ),
+            rx.table.body(
+                rx.foreach(
+                    InventoryState.filtered_products,
+                    lambda p: rx.table.row(
+                        rx.table.cell(rx.code(p["sku"], variant="ghost", color_scheme="gray")),
+                        rx.table.cell(
+                            rx.vstack(
+                                rx.text(p["name"], weight="bold", size="3"),
+                                spacing="0",
+                            )
+                        ),
+                        rx.table.cell(rx.badge(p["category"], color_scheme="gray", variant="outline", radius="full")),
+                        rx.table.cell(rx.text(f"${p['sale_price']}", weight="bold", color=rx.color("slate", 12))),
+                        rx.table.cell(
+                            rx.text(
+                                p["stock"], 
+                                weight="bold",
+                                color=rx.color(p["status_color"], 11)
+                            )
+                        ),
+                        rx.table.cell(
+                            rx.badge(
+                                rx.cond(p["is_low_stock"], "BAJO STOCK", "OK"),
+                                color_scheme=p["status_color"],
+                                variant="soft",
+                                radius="full",
+                                size="1",
+                            )
+                        ),
+                        rx.table.cell(
+                            rx.hstack(
+                                rx.tooltip(
+                                    rx.icon_button(
+                                        rx.icon(tag="arrow-up-down", size=16),
+                                        variant="soft",
+                                        color_scheme="cyan",
+                                        radius="full",
+                                        on_click=lambda: InventoryState.open_adjust_stock_modal(p["id"]),
+                                    ),
+                                    content="Ajustar Stock",
+                                ),
+                                rx.tooltip(
+                                    rx.icon_button(
+                                        rx.icon(tag="pencil", size=16),
+                                        variant="ghost",
+                                        color_scheme="gray",
+                                        radius="full",
+                                    ),
+                                    content="Editar",
+                                ),
+                                spacing="2",
+                                justify="end",
+                            )
+                        ),
+                        align="center",
+                        transition="background-color 0.2s ease",
+                        _hover={"background": rx.color("slate", 2)},
+                    )
+                )
+            ),
+            width="100%",
+            variant="surface",
+            size="3",
         ),
-        width="100%",
-        variant="surface",
-        border_radius="16px",
+        border_radius="20px",
+        overflow="hidden",
+        border=f"1px solid {rx.color('slate', 4)}",
+        box_shadow="0 4px 20px rgba(0,0,0,0.03)",
+        background=rx.color("slate", 1),
     )
 
 def add_product_modal() -> rx.Component:
-    """Modal con formulario para agregar productos."""
+    """Modal premium para agregar productos."""
     return rx.dialog.root(
         rx.dialog.content(
-            rx.dialog.title("Registrar Nuevo Producto"),
-            rx.dialog.description("Completa los detalles técnicos del item."),
-            rx.form(
-                rx.vstack(
-                    rx.grid(
-                        rx.vstack(rx.text("SKU", size="2", weight="medium"), rx.input(name="sku", value=InventoryState.product_form["sku"], placeholder="Ej: HDD-1TB-WD", width="100%")),
-                        rx.vstack(rx.text("Nombre", size="2", weight="medium"), rx.input(name="name", placeholder="Nombre comercial", width="100%")),
-                        columns="2", spacing="4", width="100%",
-                    ),
-                    rx.grid(
-                        rx.vstack(rx.text("Precio Costo", size="2", weight="medium"), rx.input(name="cost_price", type="number", placeholder="0.00", width="100%")),
-                        rx.vstack(rx.text("Precio Venta", size="2", weight="medium"), rx.input(name="sale_price", type="number", placeholder="0.00", width="100%")),
-                        columns="2", spacing="4", width="100%",
-                    ),
-                    rx.grid(
-                        rx.vstack(rx.text("Stock Inicial", size="2", weight="medium"), rx.input(name="stock", type="number", default_value="0", width="100%")),
-                        rx.vstack(rx.text("Stock Mínimo", size="2", weight="medium"), rx.input(name="min_stock", type="number", default_value="5", width="100%")),
-                        columns="2", spacing="4", width="100%",
-                    ),
+             rx.vstack(
+                rx.hstack(
+                    rx.icon(tag="package-plus", size=24, color=rx.color("cyan", 9)),
+                    rx.dialog.title("Nuevo Producto", margin="0"),
+                    spacing="3",
+                    align="center",
+                ),
+                rx.separator(width="100%", size="1"),
+                rx.form(
                     rx.vstack(
-                        rx.text("Proveedor", size="2", weight="medium"),
-                        rx.select(
-                            InventoryState.supplier_ids,
-                            name="supplier_id",
-                            placeholder="Selecciona proveedor",
+                        rx.grid(
+                            rx.vstack(rx.text("SKU", size="2", weight="bold"), rx.input(name="sku", value=InventoryState.product_form["sku"], placeholder="Ej: REP-001", width="100%", radius="large")),
+                            rx.vstack(rx.text("Nombre", size="2", weight="bold"), rx.input(name="name", placeholder="Nombre del producto", width="100%", radius="large")),
+                            columns="2", spacing="4", width="100%",
+                        ),
+                        rx.grid(
+                            rx.vstack(rx.text("Costo ($)", size="2", weight="bold"), rx.input(name="cost_price", type="number", placeholder="0.00", width="100%", radius="large")),
+                            rx.vstack(rx.text("Venta ($)", size="2", weight="bold"), rx.input(name="sale_price", type="number", placeholder="0.00", width="100%", radius="large")),
+                            columns="2", spacing="4", width="100%",
+                        ),
+                        rx.grid(
+                            rx.vstack(rx.text("Stock Inicial", size="2", weight="bold"), rx.input(name="stock", type="number", default_value="0", width="100%", radius="large")),
+                            rx.vstack(rx.text("Stock Mín.", size="2", weight="bold"), rx.input(name="min_stock", type="number", default_value="5", width="100%", radius="large")),
+                            columns="2", spacing="4", width="100%",
+                        ),
+                        rx.vstack(
+                            rx.text("Proveedor Responsable", size="2", weight="bold"),
+                            rx.select(
+                                InventoryState.supplier_ids,
+                                name="supplier_id",
+                                placeholder="Elegir proveedor...",
+                                width="100%",
+                                radius="large",
+                            ),
                             width="100%",
                         ),
+                        rx.hstack(
+                            rx.dialog.close(rx.button("Cancelar", variant="soft", color_scheme="gray", size="3", radius="large")),
+                            rx.button("Guardar en Catálogo", type="submit", variant="solid", color_scheme="cyan", size="3", radius="large"),
+                            spacing="3",
+                            width="100%",
+                            justify="end",
+                            padding_top="20px",
+                        ),
+                        spacing="4",
                         width="100%",
                     ),
-                    rx.hstack(
-                        rx.dialog.close(rx.button("Cancelar", variant="soft", color_scheme="gray")),
-                        rx.button("Guardar Producto", type="submit", variant="solid", color_scheme="cyan"),
-                        spacing="3",
-                        width="100%",
-                        justify="end",
-                        padding_top="16px",
-                    ),
-                    spacing="4",
-                    width="100%",
+                    on_submit=InventoryState.save_product,
                 ),
-                on_submit=InventoryState.save_product,
+                spacing="4",
+                width="100%",
             ),
-            max_width="450px",
+            max_width="500px",
             border_radius="24px",
-            padding="24px",
+            padding="32px",
+            background=rx.color("slate", 1),
         ),
         open=InventoryState.show_product_modal,
         on_open_change=InventoryState.set_show_product_modal,
@@ -166,27 +258,37 @@ def stock_adjust_modal() -> rx.Component:
     """Modal para ajuste rápido de stock."""
     return rx.dialog.root(
         rx.dialog.content(
-             rx.dialog.title("Ajuste de Existencias"),
-             rx.dialog.description("Registra entradas (positivo) o salidas (negativo)."),
              rx.vstack(
-                 rx.input(
-                     type="number", 
-                     placeholder="Ej: 10 o -5",
-                     on_change=InventoryState.set_stock_adjustment,
-                     width="100%",
-                     size="3",
-                 ),
-                 rx.hstack(
-                     rx.dialog.close(rx.button("Cerrar", variant="soft")),
-                     rx.button("Confirmar Ajuste", on_click=InventoryState.confirm_stock_adjustment, color_scheme="cyan"),
-                     spacing="3",
-                     width="100%",
-                     justify="end",
-                 ),
-                 spacing="4",
-                 padding_top="16px",
+                rx.hstack(
+                    rx.icon(tag="arrow-up-down", size=22, color=rx.color("cyan", 9)),
+                    rx.dialog.title("Ajustar Existencias", margin="0"),
+                    spacing="3",
+                    align="center",
+                ),
+                rx.text("Registra entradas (+) o salidas (-) de este producto.", size="2", color=rx.color("slate", 10)),
+                rx.input(
+                    type="number", 
+                    placeholder="Ej: 10 o -5",
+                    on_change=InventoryState.set_stock_adjustment,
+                    width="100%",
+                    size="3",
+                    radius="large",
+                    auto_focus=True,
+                ),
+                rx.hstack(
+                    rx.dialog.close(rx.button("Cerrar", variant="soft", color_scheme="gray", radius="large")),
+                    rx.button("Confirmar", on_click=InventoryState.confirm_stock_adjustment, color_scheme="cyan", radius="large"),
+                    spacing="3",
+                    width="100%",
+                    justify="end",
+                    padding_top="10px",
+                ),
+                spacing="4",
+                width="100%",
              ),
-             max_width="350px",
+             max_width="380px",
+             border_radius="24px",
+             padding="28px",
         ),
         open=InventoryState.show_stock_modal,
         on_open_change=InventoryState.set_show_stock_modal,
@@ -203,8 +305,8 @@ def inventory_page() -> rx.Component:
                 product_table(),
                 add_product_modal(),
                 stock_adjust_modal(),
-                spacing="5",
-                padding_bottom="48px",
+                spacing="6",
+                padding_bottom="60px",
                 width="100%",
             ),
             size="4",

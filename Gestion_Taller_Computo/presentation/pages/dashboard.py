@@ -153,7 +153,8 @@ def recent_orders_table() -> rx.Component:
                                     order["status"],
                                     color_scheme=rx.match(
                                         order["status"],
-                                        ("COMPLETED", "emerald"),
+                                        ("COMPLETED", "green"),
+
                                         ("RECEIVED", "blue"),
                                         ("IN_REPAIR", "amber"),
                                         "slate",

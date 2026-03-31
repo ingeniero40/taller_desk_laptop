@@ -259,7 +259,8 @@ def step_device() -> rx.Component:
             rx.vstack(
                 rx.text("Dispositivos registrados del cliente:", size="2", weight="medium"),
                 rx.select(
-                    [d["label"] for d in AdmissionState.customer_devices],
+                    AdmissionState.device_options,
+
                     value=AdmissionState.selected_device_id,
                     on_change=AdmissionState.set_selected_device,
                     placeholder="Seleccionar dispositivo...",
