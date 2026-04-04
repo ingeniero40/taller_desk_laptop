@@ -17,6 +17,7 @@ def init_db():
     from ...domain.entities.user import User
     from ...domain.entities.device import Device
     from ...domain.entities.work_order import WorkOrder
+    from ...domain.entities.inventory_movement import InventoryMovement
 
     SQLModel.metadata.create_all(engine)
 

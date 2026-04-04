@@ -5,6 +5,7 @@ import uuid
 # Domain / Application Imports
 from ...infrastructure.repositories.psycopg_product_repository import Psycopg2ProductRepository
 from ...infrastructure.repositories.psycopg_supplier_repository import Psycopg2SupplierRepository
+from ...infrastructure.repositories.psycopg_inventory_movement_repository import Psycopg2InventoryMovementRepository
 from ...application.use_cases.inventory_manager import InventoryManager
 from ...domain.entities.product import Product
 from ...domain.entities.supplier import Supplier
@@ -61,7 +62,8 @@ class InventoryState(rx.State):
         try:
             prod_repo = Psycopg2ProductRepository()
             supp_repo = Psycopg2SupplierRepository()
-            mgr = InventoryManager(prod_repo, supp_repo)
+            mov_repo = Psycopg2InventoryMovementRepository()
+            mgr = InventoryManager(prod_repo, supp_repo, mov_repo)
             
             # 1. Obtener Productos
             all_prods = prod_repo.findAll()
@@ -162,7 +164,8 @@ class InventoryState(rx.State):
         try:
             prod_repo = Psycopg2ProductRepository()
             supp_repo = Psycopg2SupplierRepository()
-            mgr = InventoryManager(prod_repo, supp_repo)
+            mov_repo = Psycopg2InventoryMovementRepository()
+            mgr = InventoryManager(prod_repo, supp_repo, mov_repo)
             
             # Sanitizar y Convertir Tipos
             sku = form_data.get("sku")
@@ -206,13 +209,17 @@ class InventoryState(rx.State):
 
     @rx.event
     def confirm_stock_adjustment(self):
-        """Aplica el cambio de stock en el repositorio."""
+        """Aplica el cambio de stock en el repositorio y registra el movimiento."""
         if not self.selected_product_id:
             return
             
         try:
             prod_repo = Psycopg2ProductRepository()
-            prod_repo.update_stock(uuid.UUID(self.selected_product_id), self.stock_adjustment)
+            supp_repo = Psycopg2SupplierRepository()
+            mov_repo = Psycopg2InventoryMovementRepository()
+            mgr = InventoryManager(prod_repo, supp_repo, mov_repo)
+            
+            mgr.adjust_stock(uuid.UUID(self.selected_product_id), self.stock_adjustment, notes="Ajuste manual")
             self.show_stock_modal = False
             return self.fetch_all_data()
         except Exception as e:

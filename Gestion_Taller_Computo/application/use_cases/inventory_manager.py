@@ -6,16 +6,21 @@ from ...domain.interfaces.supplier_repository import ISupplierRepository
 import uuid
 
 
+from ...domain.interfaces.inventory_movement_repository import IInventoryMovementRepository
+from ...domain.entities.inventory_movement import InventoryMovement
+
 class InventoryManager:
     """
     Caso de uso para la gestión de inventario y proveedores.
     """
 
     def __init__(
-        self, product_repo: IProductRepository, supplier_repo: ISupplierRepository
+        self, product_repo: IProductRepository, supplier_repo: ISupplierRepository,
+        movement_repo: IInventoryMovementRepository = None
     ):
         self.product_repo = product_repo
         self.supplier_repo = supplier_repo
+        self.movement_repo = movement_repo
 
     # --- Gestión de Proveedores ---
 
@@ -65,13 +70,55 @@ class InventoryManager:
             category=category,
             supplier_id=supplier_id,
         )
-        return self.product_repo.create(new_product)
+        created = self.product_repo.create(new_product)
+        
+        if stock > 0 and self.movement_repo:
+            mov = InventoryMovement(
+                product_id=created.id,
+                movement_type="IN",
+                quantity=stock,
+                notes="Stock inicial",
+            )
+            self.movement_repo.create(mov)
+            
+        return created
 
-    def adjust_stock(self, product_id: uuid.UUID, quantity: int) -> bool:
+    def adjust_stock(self, product_id: uuid.UUID, quantity: int, reference_id: str = None, notes: str = None, user_id: uuid.UUID = None) -> bool:
         """
         Realiza ajustes manuales de stock (entradas/salidas).
         """
-        return self.product_repo.update_stock(product_id, quantity)
+        if quantity == 0:
+            return True
+            
+        success = self.product_repo.update_stock(product_id, quantity)
+        if success and self.movement_repo:
+            movement_type = "IN" if quantity > 0 else "OUT"
+            mov = InventoryMovement(
+                product_id=product_id,
+                movement_type=movement_type,
+                quantity=quantity,
+                reference_id=reference_id,
+                notes=notes,
+                created_by_id=user_id
+            )
+            self.movement_repo.create(mov)
+            
+        return success
+        
+    def consume_part_for_order(self, product_id: uuid.UUID, quantity: int, order_id: uuid.UUID, user_id: uuid.UUID = None) -> bool:
+        """
+        Consume repuestos para una orden de trabajo.
+        """
+        if quantity <= 0:
+            raise ValueError("La cantidad a consumir debe ser positiva.")
+            
+        product = self.product_repo.findById(product_id)
+        if not product or product.stock < quantity:
+            raise ValueError("Stock insuficiente.")
+            
+        return self.adjust_stock(
+            product_id, -quantity, reference_id=str(order_id), notes="Consumido en Orden de Trabajo", user_id=user_id
+        )
 
     def get_low_stock_reports(self) -> List[Product]:
         """

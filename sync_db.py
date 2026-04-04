@@ -15,6 +15,7 @@ try:
     from Gestion_Taller_Computo.domain.entities.supplier import Supplier
     from Gestion_Taller_Computo.domain.entities.invoice import Invoice
     from Gestion_Taller_Computo.domain.entities.payment import Payment
+    from Gestion_Taller_Computo.domain.entities.inventory_movement import InventoryMovement
 except UnicodeDecodeError as e:
     print(f"Error de codificación al importar entidades: {e}")
     sys.exit(1)
