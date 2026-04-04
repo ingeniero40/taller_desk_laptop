@@ -254,7 +254,8 @@ def detail_tabs() -> rx.Component:
         tab_btn("Detalle",       "info",       "info"),
         tab_btn("Comentarios",   "comments",   "message-square"),
         tab_btn("Incidencias",   "incidents",  "triangle-alert"),
-        spacing="2", width="100%",
+        tab_btn("Repuestos",     "parts",      "package-plus"),
+        spacing="2", width="100%", overflow_x="auto"
     )
 
 
@@ -558,6 +559,85 @@ def incidents_tab() -> rx.Component:
     )
 
 
+def parts_tab() -> rx.Component:
+    return rx.vstack(
+        # Botón para consumir
+        rx.hstack(
+            rx.text("Consumo de Repuestos", size="2", weight="bold"),
+            rx.spacer(),
+            rx.button(
+                rx.icon(tag="package-plus", size=14),
+                rx.text("Usar repuesto"),
+                on_click=TrackingState.toggle_consume_form,
+                color_scheme="cyan", variant="soft", size="2",
+            ),
+            width="100%", align_items="center"
+        ),
+        # Formulario de consumo
+        rx.cond(
+            TrackingState.show_consume_form,
+            rx.card(
+                rx.vstack(
+                    rx.text("Registrar uso de repuesto", size="2", weight="bold", color=rx.color("cyan", 10)),
+                    rx.cond(
+                        TrackingState.product_labels.length() > 0,
+                        rx.vstack(
+                            rx.box(
+                                rx.text("Selecciona el repuesto:", size="1", weight="bold", color=rx.color("slate", 9)),
+                                rx.select(
+                                    items=TrackingState.product_labels,
+                                    value=TrackingState.selected_product_label,
+                                    on_change=TrackingState.set_selected_product_label,
+                                    size="2", width="100%"
+                                ),
+                            ),
+                            rx.hstack(
+                                rx.box(
+                                    rx.text("Cantidad:", size="1", weight="bold", color=rx.color("slate", 9)),
+                                    rx.input(
+                                        type="number", 
+                                        value=TrackingState.consume_quantity.to_string(), 
+                                        on_change=TrackingState.set_consume_quantity,
+                                        width="100px"
+                                    ),
+                                ),
+                                rx.spacer(),
+                                rx.button(
+                                    "Confirmar Uso",
+                                    on_click=TrackingState.consume_part,
+                                    color_scheme="cyan", size="2"
+                                ),
+                                align_items="end", width="100%"
+                            ),
+                            spacing="3", width="100%"
+                        ),
+                        rx.text("No hay repuestos con stock disponible.", size="2", color=rx.color("red", 9))
+                    ),
+                    spacing="3", width="100%"
+                ),
+                padding="14px", width="100%",
+                border=f"1px solid {rx.color('cyan', 5)}",
+                background=rx.color("cyan", 1),
+            )
+        ),
+        # Nota explicativa
+        rx.card(
+            rx.hstack(
+                rx.icon(tag="info", size=16, color=rx.color("cyan", 9)),
+                rx.text(
+                    "El repuesto seleccionado se descontará del almacén y "
+                    "quedará registrado como un comentario interno en el ticket.",
+                    size="1", color=rx.color("slate", 10)
+                ),
+                spacing="2", align_items="start"
+            ),
+            padding="12px", background=rx.color("slate", 2), border_radius="8px",
+            border=f"1px dashed {rx.color('slate', 5)}", width="100%"
+        ),
+        spacing="4", width="100%",
+    )
+
+
 def detail_panel() -> rx.Component:
     return rx.cond(
         TrackingState.show_detail,
@@ -598,6 +678,7 @@ def detail_panel() -> rx.Component:
                     rx.cond(TrackingState.active_tab == "info",       info_tab()),
                     rx.cond(TrackingState.active_tab == "comments",   comments_tab()),
                     rx.cond(TrackingState.active_tab == "incidents",  incidents_tab()),
+                    rx.cond(TrackingState.active_tab == "parts",      parts_tab()),
                     width="100%",
                 ),
                 spacing="4", width="100%",

@@ -394,3 +394,112 @@ class TrackingState(rx.State):
             self._load_incidents(self.selected_order.get("id", ""))
         except Exception as e:
             return rx.window_alert(f"Error al resolver incidencia: {e}")
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Consumo de Repuestos (Inventario)
+    # ─────────────────────────────────────────────────────────────────────
+    available_products: List[Dict[str, Any]] = []
+    show_consume_form: bool = False
+    consume_product_id: str = ""
+    consume_quantity: int = 1
+
+    @rx.event
+    def toggle_consume_form(self):
+        self.show_consume_form = not self.show_consume_form
+        self.consume_quantity = 1
+        if self.show_consume_form and not self.available_products:
+            self._load_products()
+
+    product_labels: List[str] = []
+    selected_product_label: str = ""
+
+    @rx.event
+    def set_selected_product_label(self, val: str):
+        self.selected_product_label = val
+        for p in self.available_products:
+            if p["label"] == val:
+                self.consume_product_id = p["id"]
+                break
+
+    @rx.event
+    def set_consume_quantity(self, val: str):
+        try:
+            self.consume_quantity = int(val) if val else 1
+        except ValueError:
+            self.consume_quantity = 1
+
+    def _load_products(self):
+        try:
+            from ...infrastructure.repositories.psycopg_product_repository import Psycopg2ProductRepository
+            repo = Psycopg2ProductRepository()
+            self.available_products = []
+            self.product_labels = []
+            for p in repo.findAll():
+                if p.stock > 0:
+                    label = f"{p.sku} | {p.name} (Stock: {p.stock})"
+                    self.available_products.append({
+                        "id": str(p.id),
+                        "name": p.name,
+                        "stock": p.stock,
+                        "label": label
+                    })
+                    self.product_labels.append(label)
+                    
+            if self.available_products:
+                self.consume_product_id = self.available_products[0]["id"]
+                self.selected_product_label = self.available_products[0]["label"]
+        except Exception as e:
+            print(f"[TrackingState] load_products error: {e}")
+
+    @rx.event
+    def consume_part(self):
+        if not self.consume_product_id:
+            return rx.window_alert("Selecciona un repuesto.")
+        if self.consume_quantity <= 0:
+            return rx.window_alert("La cantidad debe ser mayor a 0.")
+        
+        order_id = self.selected_order.get("id", "")
+        if not order_id:
+            return
+
+        try:
+            from ...infrastructure.repositories.psycopg_product_repository import Psycopg2ProductRepository
+            from ...infrastructure.repositories.psycopg_supplier_repository import Psycopg2SupplierRepository
+            from ...infrastructure.repositories.psycopg_inventory_movement_repository import Psycopg2InventoryMovementRepository
+            from ...application.use_cases.inventory_manager import InventoryManager
+            
+            prod_repo = Psycopg2ProductRepository()
+            supp_repo = Psycopg2SupplierRepository()
+            mov_repo = Psycopg2InventoryMovementRepository()
+            mgr = InventoryManager(prod_repo, supp_repo, mov_repo)
+            
+            # Executing consumption
+            mgr.consume_part_for_order(
+                product_id=uuid.UUID(self.consume_product_id),
+                quantity=self.consume_quantity,
+                order_id=uuid.UUID(order_id),
+                user_id=None # Optionally pass technician ID
+            )
+            
+            # Find product name to log in a comment
+            prod_name = next((p["name"] for p in self.available_products if p["id"] == self.consume_product_id), "Repuesto")
+            
+            # Auto-comment about consumed part
+            comment_repo = Psycopg2WorkOrderCommentRepository()
+            comment = WorkOrderComment(
+                work_order_id=uuid.UUID(order_id),
+                author_name="Sistema (Inventario)",
+                content=f"Se consumieron {self.consume_quantity} unid. de {prod_name}. Stock deducido automáticamente.",
+                is_internal=True,
+            )
+            comment_repo.create(comment)
+            
+            # Reset UI and refresh
+            self.show_consume_form = False
+            self.consume_quantity = 1
+            self._load_products() # refresh stock logic 
+            self._load_comments(order_id)
+            return rx.window_alert("Repuesto consumido y descontado del inventario exitosamente.")
+            
+        except Exception as e:
+            return rx.window_alert(f"Error al consumir repuesto: {e}")

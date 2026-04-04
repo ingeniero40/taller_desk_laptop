@@ -104,7 +104,7 @@ class Psycopg2AnalyticsRepository(IAnalyticsRepository):
             SELECT wo.ticket_number, d.brand, d.model, u.full_name, wo.status, wo.created_at
             FROM work_orders wo
             JOIN devices d ON wo.device_id = d.id
-            JOIN users u ON d.owner_id = u.id
+            JOIN users u ON d.customer_id = u.id
             ORDER BY wo.created_at DESC
             LIMIT %s;
         """
