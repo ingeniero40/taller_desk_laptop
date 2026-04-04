@@ -63,6 +63,20 @@ class TrackingState(rx.State):
     show_detail:    bool = False
     active_tab:     str  = "info"   # info | comments | incidents
 
+    @rx.var
+    def first_entry_image(self) -> str:
+        """Extrae la primera foto de entrada a nivel de servidor."""
+        imgs = self.selected_order.get("entry_images", "")
+        if not imgs: return ""
+        return imgs.split(";")[0]
+
+    @rx.var
+    def first_exit_image(self) -> str:
+        """Extrae la primera foto de salida a nivel de servidor."""
+        imgs = self.selected_order.get("exit_images", "")
+        if not imgs: return ""
+        return imgs.split(";")[0]
+
     # ── Comentarios ───────────────────────────────────────────────────────
     comments:              List[Dict[str, Any]] = []
     new_comment_text:      str  = ""
@@ -75,6 +89,12 @@ class TrackingState(rx.State):
     new_solution_text:    str  = ""  # para resolución inline
     resolving_incident_id: str = ""
     show_resolve_form:    bool = False
+    
+    # ── Entrega (Check-out) (Contexto 9) ──────────────────────────────────
+    show_checkout_modal: bool = False
+    exit_images_urls:    List[str] = []
+    checkout_signature:  str = ""  # Base64 representativo
+    delivery_notes:      str = ""
 
     # ── Metadata ──────────────────────────────────────────────────────────
     is_loading:   bool = False
@@ -137,6 +157,40 @@ class TrackingState(rx.State):
         self.show_resolve_form = False
         self.resolving_incident_id = ""
         self.new_solution_text = ""
+
+    @rx.event
+    def open_checkout(self):
+        """Prepara el modal de entrega."""
+        self.show_checkout_modal = True
+        self.exit_images_urls = []
+        self.checkout_signature = ""
+        self.delivery_notes = ""
+
+    @rx.event
+    def set_checkout_signature(self, signature_data: str):
+        """Recibe la firma digital en base64."""
+        self.checkout_signature = signature_data
+
+    @rx.event
+    def set_delivery_notes(self, val: str):
+        self.delivery_notes = val
+
+    @rx.event
+    async def handle_exit_image_upload(self, files: List[rx.UploadFile]):
+        """Sube y registra imágenes del equipo al entregarse."""
+        import os
+        upload_dir = os.path.join("assets", "uploads", "check_out")
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+
+        for file in files:
+            upload_data = await file.read()
+            ext = os.path.splitext(file.filename)[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+            outfile = os.path.join(upload_dir, filename)
+            with open(outfile, "wb") as f:
+                f.write(upload_data)
+            self.exit_images_urls.append(f"/uploads/check_out/{filename}")
 
     # ─────────────────────────────────────────────────────────────────────
     # Computed vars — Kanban por status
@@ -582,3 +636,53 @@ class TrackingState(rx.State):
             return rx.window_alert(f"¡Factura {invoice.invoice_number} generada con éxito!")
         except Exception as e:
             return rx.window_alert(f"Error al generar factura: {e}")
+
+    @rx.event
+    def confirm_delivery(self):
+        """Finaliza el proceso de entrega: actualiza estado y registra firma/fotos."""
+        order_id = self.selected_order.get("id")
+        if not order_id:
+            return
+
+        # Validación mínima: firma es requerida para entrega formal en POS
+        if not self.checkout_signature:
+            return rx.window_alert("Se requiere la firma del cliente para proceder con la entrega.")
+
+        try:
+            repo = Psycopg2WorkOrderRepository()
+            order = repo.findById(uuid.UUID(order_id))
+            if order:
+                order.status = WorkOrderStatus.DELIVERED
+                order.actual_delivery = datetime.utcnow()
+                order.is_delivered = True
+                
+                # Guardar evidencia Contexto 9
+                if self.exit_images_urls:
+                    order.exit_images = ";".join(self.exit_images_urls)
+                
+                order.client_signature = self.checkout_signature
+                
+                if self.delivery_notes:
+                    if order.repair_notes:
+                        order.repair_notes += f"\nNotas de entrega: {self.delivery_notes}"
+                    else:
+                        order.repair_notes = f"Notas de entrega: {self.delivery_notes}"
+
+                repo.update(order)
+                
+                # Auto-comentario de cierre
+                comment_repo = Psycopg2WorkOrderCommentRepository()
+                c = WorkOrderComment(
+                    work_order_id=uuid.UUID(order_id),
+                    author_name="Sistema",
+                    content=f"Equipo entregado al cliente satisfactoriamente. Evidencia fotográfica y firma registradas.",
+                    is_internal=False
+                )
+                comment_repo.create(c)
+                
+                self.show_checkout_modal = False
+                self.close_detail()
+                self.fetch_all_data()
+                return rx.window_alert("¡Equipo entregado con éxito!")
+        except Exception as e:
+            return rx.window_alert(f"Error en la entrega: {e}")

@@ -340,23 +340,52 @@ def step_device() -> rx.Component:
                     width="100%",
                 ),
 
-                # Accesorios
+                # Evidencia Fotográfica (Contexto 9)
                 rx.vstack(
                     rx.hstack(
-                        rx.text("Accesorios Entregados", size="2", weight="medium"),
-                        rx.badge("Opcional", color_scheme="gray", size="1", variant="soft"),
+                        rx.icon(tag="camera", size=18, color=rx.color("cyan", 9)),
+                        rx.text("Evidencia Fotográfica", size="2", weight="medium"),
+                        rx.badge("Contexto 9", color_scheme="cyan", variant="solid", size="1"),
                         spacing="2",
                     ),
-                    rx.text_area(
-                        placeholder="Ej: Cargador original, funda, mouse, teclado USB...",
-                        value=AdmissionState.accessories,
-                        on_change=AdmissionState.set_accessories,
-                        rows="3",
+                    rx.upload(
+                        rx.vstack(
+                            rx.button("Seleccionar Fotos (Antes)", variant="soft", color_scheme="cyan"),
+                            rx.text("O arrastra y suelta aquí", size="1", color=rx.color("slate", 9)),
+                        ),
+                        id="upload_entry",
+                        multiple=True,
+                        accept={"image/*": [".jpg", ".jpeg", ".png"]},
+                        max_files=5,
+                        on_drop=AdmissionState.handle_entry_image_upload(rx.upload_files(upload_id="upload_entry")),
+                        border=f"2px dashed {rx.color('cyan', 5)}",
+                        padding="20px",
+                        border_radius="12px",
                         width="100%",
-                        resize="vertical",
+                        background=rx.color("cyan", 1),
                     ),
-                    spacing="1",
+                    # Previsualización de imágenes
+                    rx.cond(
+                        AdmissionState.entry_images_urls.length() > 0,
+                        rx.hstack(
+                            rx.foreach(
+                                AdmissionState.entry_images_urls,
+                                lambda url: rx.box(
+                                    rx.image(src=url, width="60px", height="60px", border_radius="8px", object_fit="cover"),
+                                    border=f"1px solid {rx.color('slate', 4)}",
+                                    border_radius="10px",
+                                    padding="2px",
+                                )
+                            ),
+                            spacing="2",
+                            flex_wrap="wrap",
+                            padding_top="10px",
+                        ),
+                        rx.fragment()
+                    ),
+                    spacing="2",
                     width="100%",
+                    padding_top="10px",
                 ),
                 spacing="4",
                 width="100%",

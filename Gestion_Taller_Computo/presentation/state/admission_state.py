@@ -58,6 +58,7 @@ class AdmissionState(rx.State):
     has_existing_device: bool = False
     customer_devices: List[Dict[str, str]] = []
     selected_device_id: str = ""
+    entry_images_urls: List[str] = []
 
     @rx.var
     def device_options(self) -> List[str]:
@@ -141,6 +142,27 @@ class AdmissionState(rx.State):
         self.admission_complete = False
         self.success_message = ""
         self.error_message = ""
+        self.entry_images_urls = []
+
+    @rx.event
+    async def handle_entry_image_upload(self, files: List[rx.UploadFile]):
+        """Sube y registra imágenes del equipo al ingresar."""
+        import os
+        upload_dir = os.path.join("assets", "uploads", "check_in")
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+
+        for file in files:
+            upload_data = await file.read()
+            # Nombre de archivo único: uuid_original.ext
+            ext = os.path.splitext(file.filename)[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+            outfile = os.path.join(upload_dir, filename)
+            with open(outfile, "wb") as f:
+                f.write(upload_data)
+            
+            # Guardamos la ruta relativa para el frontend/DB
+            self.entry_images_urls.append(f"/uploads/check_in/{filename}")
 
     # ── PASO 1 Eventos ───────────────────────────────────────────────────
 
@@ -321,6 +343,11 @@ class AdmissionState(rx.State):
             # Aplicar prioridad
             from ...domain.value_objects.order_priority import OrderPriority
             order.priority = OrderPriority(self.problem_priority)
+            
+            # Guardar evidencia fotográfica (Contexto 9)
+            if self.entry_images_urls:
+                order.entry_images = ";".join(self.entry_images_urls)
+                
             order_repo.update(order)
 
             self.generated_ticket = order.ticket_number

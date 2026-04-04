@@ -13,12 +13,12 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
     Repositorio de Órdenes de Trabajo — Psycopg2.
     Usa columnas nombradas explícitamente para evitar dependencia en el orden de columnas.
     """
-
     _COLUMNS = """
         id, created_at, updated_at, ticket_number, status,
         device_id, technician_id, diagnostic_notes, repair_notes,
         quoted_price, priority, due_date,
-        estimated_hours, actual_hours, actual_delivery
+        estimated_hours, actual_hours, actual_delivery,
+        entry_images, exit_images, client_signature, is_delivered
     """
 
     def __init__(self, db_handler: Psycopg2Database = None):
@@ -32,9 +32,10 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
                 id, created_at, updated_at, ticket_number, status,
                 device_id, technician_id, diagnostic_notes, repair_notes,
                 quoted_price, priority, due_date,
-                estimated_hours, actual_hours, actual_delivery
+                estimated_hours, actual_hours, actual_delivery,
+                entry_images, exit_images, client_signature, is_delivered
             )
-            VALUES (%s,%s,%s,%s,%s, %s,%s,%s,%s, %s,%s,%s, %s,%s,%s)
+            VALUES (%s,%s,%s,%s,%s, %s,%s,%s,%s, %s,%s,%s, %s,%s,%s, %s,%s,%s,%s)
             RETURNING id;
         """
         params = (
@@ -57,6 +58,10 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
             order.estimated_hours,
             order.actual_hours,
             order.actual_delivery,
+            order.entry_images,
+            order.exit_images,
+            order.client_signature,
+            order.is_delivered,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return order
@@ -103,7 +108,8 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
                 diagnostic_notes = %s, repair_notes = %s,
                 quoted_price = %s, priority = %s, due_date = %s,
                 estimated_hours = %s, actual_hours = %s, actual_delivery = %s,
-                updated_at = %s
+                updated_at = %s,
+                entry_images = %s, exit_images = %s, client_signature = %s, is_delivered = %s
             WHERE id = %s
         """
         params = (
@@ -122,6 +128,10 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
             order.actual_hours,
             order.actual_delivery,
             order.updated_at,
+            order.entry_images,
+            order.exit_images,
+            order.client_signature,
+            order.is_delivered,
             str(order.id),
         )
         self.db.executeRawQuery(query, params)
@@ -169,4 +179,8 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
             estimated_hours=float(row[12]) if row[12] is not None else None,
             actual_hours=float(row[13]) if row[13] is not None else None,
             actual_delivery=row[14],
+            entry_images=row[15],
+            exit_images=row[16],
+            client_signature=row[17],
+            is_delivered=row[18] if len(row) > 18 else False,
         )

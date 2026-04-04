@@ -344,6 +344,47 @@ def info_tab() -> rx.Component:
                 padding="14px", width="100%",
             ),
         ),
+        # Comparativa Visual (Contexto 9)
+        rx.cond(
+            (o["entry_images"] != "") | (o["exit_images"] != ""),
+            rx.card(
+                rx.vstack(
+                    rx.hstack(rx.icon(tag="images", size=18, color=rx.color("cyan", 9)),
+                              rx.text("Evidencia Visual (Antes/Después)", size="2", weight="bold"), spacing="2"),
+                    rx.grid(
+                        # Antes
+                        rx.vstack(
+                            rx.text("Entrada (Antes)", size="1", weight="bold", color=rx.color("slate", 9)),
+                            rx.cond(
+                                o["entry_images"] != "",
+                                rx.hstack(
+                                    rx.image(src=TrackingState.first_entry_image, height="80px", border_radius="8px", object_fit="cover"),
+                                    spacing="1"
+                                ),
+                                rx.text("Sin fotos", size="1", color=rx.color("slate", 7))
+                            ),
+                            align_items="start",
+                        ),
+                        # Después
+                        rx.vstack(
+                            rx.text("Salida (Después)", size="1", weight="bold", color=rx.color("slate", 9)),
+                            rx.cond(
+                                o["exit_images"] != "",
+                                rx.hstack(
+                                    rx.image(src=TrackingState.first_exit_image, height="80px", border_radius="8px", object_fit="cover"),
+                                    spacing="1"
+                                ),
+                                rx.text("Pendiente", size="1", color=rx.color("slate", 7))
+                            ),
+                            align_items="start",
+                        ),
+                        columns="2", spacing="4", width="100%",
+                    ),
+                    spacing="3",
+                ),
+                padding="14px", width="100%",
+            ),
+        ),
         spacing="4", width="100%",
     )
 
@@ -789,7 +830,94 @@ def tracking_header() -> rx.Component:
         ],
     )
 
-# ── Página principal ──────────────────────────────────────────────────────────
+def checkout_modal() -> rx.Component:
+    """Modal de entrega (Check-out) con firma digital y fotos."""
+    return rx.dialog.root(
+        rx.dialog.content(
+            rx.vstack(
+                rx.dialog.title("Confirmación de Entrega — Check-out"),
+                rx.dialog.description("Registra la evidencia final y la firma del cliente."),
+                rx.divider(opacity=0.3),
+                
+                # Paso 1: Evidencia fotográfica (Check-out)
+                rx.vstack(
+                    rx.text("1. Evidencia Fotográfica (Fotos del Equipo al Salir)", 
+                            size="2", weight="bold", color=rx.color("cyan", 9)),
+                    rx.upload(
+                        rx.vstack(
+                            rx.icon(tag="camera", size=24),
+                            rx.text("Clic o arrastra fotos de la entrega", size="1"),
+                            spacing="1", align_items="center",
+                        ),
+                        id="upload_exit",
+                        multiple=True,
+                        accept={"image/*": [".jpg", ".jpeg", ".png"]},
+                        on_drop=TrackingState.handle_exit_image_upload(rx.upload_files(upload_id="upload_exit")),
+                        border=f"2px dashed {rx.color('cyan', 5)}",
+                        padding="16px", border_radius="10px", width="100%", background=rx.color("cyan", 1),
+                    ),
+                    rx.cond(
+                        TrackingState.exit_images_urls.length() > 0,
+                        rx.hstack(
+                            rx.foreach(TrackingState.exit_images_urls,
+                                       lambda url: rx.image(src=url, width="48px", height="48px", 
+                                                          border_radius="6px", object_fit="cover")),
+                            spacing="2", flex_wrap="wrap",
+                        ),
+                        rx.fragment(),
+                    ),
+                    spacing="2", width="100%",
+                ),
+                
+                # Paso 2: Firma Digital
+                rx.vstack(
+                    rx.text("2. Firma del Cliente", size="2", weight="bold", color=rx.color("cyan", 9)),
+                    rx.box(
+                        rx.text("Por el momento, ingrese el Nombre de quien retira como firma representativa:", 
+                                size="1", color=rx.color("slate", 9)),
+                        rx.input(
+                            placeholder="Nombre y Apellido de quien recibe...",
+                            value=TrackingState.checkout_signature,
+                            on_change=TrackingState.set_checkout_signature,
+                            width="100%",
+                            radius="large",
+                        ),
+                        spacing="2", width="100%",
+                    ),
+                    spacing="2", width="100%",
+                ),
+                
+                # Paso 3: Notas adicionales
+                rx.vstack(
+                    rx.text("3. Notas de Entrega", size="2", weight="bold", color=rx.color("cyan", 9)),
+                    rx.text_area(
+                        placeholder="Ej: Se entregó con cargador, el cliente probó el Wi-Fi...",
+                        value=TrackingState.delivery_notes,
+                        on_change=TrackingState.set_delivery_notes,
+                        rows="2", width="100%",
+                    ),
+                    spacing="1", width="100%",
+                ),
+                
+                rx.divider(opacity=0.3),
+                rx.hstack(
+                    rx.dialog.close(
+                        rx.button("Cancelar", variant="soft", color_scheme="gray", radius="large"),
+                    ),
+                    rx.spacer(),
+                    rx.button(
+                        "Confirmar Entrega y Cerrar Ticket",
+                        on_click=TrackingState.confirm_delivery,
+                        color_scheme="green", variant="solid", radius="large",
+                    ),
+                    width="100%",
+                ),
+                spacing="4", width="100%",
+            ),
+            width="500px",
+        ),
+        open=TrackingState.show_checkout_modal,
+    )
 
 def tracking_page() -> rx.Component:
     return rx.hstack(
@@ -798,7 +926,6 @@ def tracking_page() -> rx.Component:
             rx.container(
                 rx.vstack(
                     tracking_header(),
-                    # Alert-strip
                     alert_banner(),
                     # KPI global
                     rx.hstack(
@@ -822,11 +949,9 @@ def tracking_page() -> rx.Component:
                                         rx.icon(tag="bell-ring", size=20, color=rx.color("red", 9)),
                                         padding="8px", border_radius="full",
                                         background=rx.color("red", 2),
-                                        animation="pulse 2s infinite",
                                     ),
                                     rx.vstack(
-                                        rx.text(TrackingState.alert_count, size="5", weight="bold",
-                                                color=rx.color("red", 9)),
+                                        rx.text(TrackingState.alert_count, size="5", weight="bold", color=rx.color("red", 9)),
                                         rx.text("Alertas Activas", size="1", color=rx.color("slate", 9)),
                                         spacing="0",
                                     ),
@@ -836,6 +961,7 @@ def tracking_page() -> rx.Component:
                                 border=f"1px solid {rx.color('red', 5)}",
                                 background=rx.color("red", 1),
                             ),
+                            rx.fragment(),
                         ),
                         spacing="4",
                     ),
@@ -852,8 +978,8 @@ def tracking_page() -> rx.Component:
             overflow_y="auto",
             min_width="0",
         ),
-        # Panel detalle lateral
         detail_panel(),
+        checkout_modal(),
         background_color=rx.color("slate", 2),
         min_height="100vh",
         spacing="0",

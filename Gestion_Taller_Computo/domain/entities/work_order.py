@@ -36,3 +36,9 @@ class WorkOrder(BaseEntity, table=True):
 
     # Costos base (Monto parcial o total)
     quoted_price: float = Field(default=0.0)
+
+    # Evidencia Visual y Firma (Contexto 9)
+    entry_images: Optional[str] = Field(default=None)  # URLs de fotos en recepción, separadas por ";"
+    exit_images: Optional[str] = Field(default=None)   # URLs de fotos en entrega, separadas por ";"
+    client_signature: Optional[str] = Field(default=None)  # URL de la firma digital (SVG/PNG base64 o path)
+    is_delivered: bool = Field(default=False)  # Estado físico de entrega
