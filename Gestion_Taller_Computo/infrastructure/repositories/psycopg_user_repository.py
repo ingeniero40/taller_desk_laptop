@@ -8,11 +8,12 @@ from ..database.psycopg_db import Psycopg2Database
 
 from datetime import datetime
 
+
 class Psycopg2UserRepository(IUserRepository):
     """
     Implementación del repositorio de usuarios utilizando Psycopg2.
     """
-    
+
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
 
@@ -32,9 +33,9 @@ class Psycopg2UserRepository(IUserRepository):
             user.phone,
             user.is_active,
             user.created_at,
-            user.updated_at
+            user.updated_at,
         )
-        
+
         results = self.db.executeRawQuery(query, params, fetch=True)
         if results:
             # Sincronizamos los campos generados por la BD si existieran, aunque aquí los pasamos nosotros
@@ -49,13 +50,11 @@ class Psycopg2UserRepository(IUserRepository):
             return self._map_row_to_entity(results[0])
         return None
 
-
-
     def findByUsername(self, username: str) -> Optional[User]:
         query = "SELECT * FROM users WHERE username = %s"
         params = (username,)
         results = self.db.executeRawQuery(query, params, fetch=True)
-        
+
         if results:
             return self._map_row_to_entity(results[0])
         return None
@@ -81,7 +80,7 @@ class Psycopg2UserRepository(IUserRepository):
             user.phone,
             user.is_active,
             user.updated_at,
-            str(user.id)
+            str(user.id),
         )
         self.db.executeRawQuery(query, params)
         return user
@@ -110,6 +109,5 @@ class Psycopg2UserRepository(IUserRepository):
             full_name=row[6],
             role=UserRole(row[7]),
             phone=row[8],
-            is_active=row[9]
+            is_active=row[9],
         )
-

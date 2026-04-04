@@ -5,11 +5,12 @@ from ...domain.entities.product import Product
 from ...domain.interfaces.product_repository import IProductRepository
 from ..database.psycopg_db import Psycopg2Database
 
+
 class Psycopg2ProductRepository(IProductRepository):
     """
     Implementación del repositorio de productos con Psycopg2.
     """
-    
+
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
 
@@ -23,11 +24,18 @@ class Psycopg2ProductRepository(IProductRepository):
             RETURNING id;
         """
         params = (
-            str(product.id), product.created_at, product.updated_at,
-            product.sku, product.name, product.description,
-            product.cost_price, product.sale_price, product.stock,
-            product.min_stock, product.category, 
-            str(product.supplier_id) if product.supplier_id else None
+            str(product.id),
+            product.created_at,
+            product.updated_at,
+            product.sku,
+            product.name,
+            product.description,
+            product.cost_price,
+            product.sale_price,
+            product.stock,
+            product.min_stock,
+            product.category,
+            str(product.supplier_id) if product.supplier_id else None,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return product
@@ -69,10 +77,17 @@ class Psycopg2ProductRepository(IProductRepository):
             WHERE id = %s
         """
         params = (
-            product.sku, product.name, product.description, product.cost_price,
-            product.sale_price, product.stock, product.min_stock, product.category,
+            product.sku,
+            product.name,
+            product.description,
+            product.cost_price,
+            product.sale_price,
+            product.stock,
+            product.min_stock,
+            product.category,
             str(product.supplier_id) if product.supplier_id else None,
-            product.updated_at, str(product.id)
+            product.updated_at,
+            str(product.id),
         )
         self.db.executeRawQuery(query, params)
         return product
@@ -116,5 +131,5 @@ class Psycopg2ProductRepository(IProductRepository):
             stock=int(row[8]),
             min_stock=int(row[9]),
             category=row[10],
-            supplier_id=uuid.UUID(str(row[11])) if row[11] else None
+            supplier_id=uuid.UUID(str(row[11])) if row[11] else None,
         )

@@ -8,14 +8,13 @@ from ...domain.interfaces.database_handler import IDatabaseHandler
 # Cargar variables de entorno siguiendo los estándares de seguridad
 load_dotenv()
 
+
 class Psycopg2Database(IDatabaseHandler):
     """
     Gestor de conexiones para PostgreSQL utilizando Psycopg2.
     Implementa la interfaz IDatabaseHandler siguiendo Clean Architecture.
     """
 
-
-    
     _pool = None
 
     @classmethod
@@ -25,20 +24,20 @@ class Psycopg2Database(IDatabaseHandler):
         """
         if cls._pool is None:
             # Forzar mensajes de error en inglés para evitar conflictos de encoding con caracteres especiales (ó, é, ñ)
-            os.environ['PGMESSAGELANG'] = 'English'
-            
+            os.environ["PGMESSAGELANG"] = "English"
+
             # Recuperar URL de conexión desde variables de entorno
             databaseUrl = os.getenv("DATABASE_URL")
 
             if not databaseUrl:
-                raise ValueError("DATABASE_URL no encontrada en las variables de entorno.")
-            
+                raise ValueError(
+                    "DATABASE_URL no encontrada en las variables de entorno."
+                )
+
             try:
                 # Inicialización del pool de conexiones (Threaded para concurrencia en Reflex)
                 cls._pool = psycopg2.pool.ThreadedConnectionPool(
-                    minconn=1,
-                    maxconn=20,
-                    dsn=databaseUrl
+                    minconn=1, maxconn=20, dsn=databaseUrl
                 )
             except Exception as e:
                 # Manejo centralizado de errores de conexión
@@ -55,8 +54,8 @@ class Psycopg2Database(IDatabaseHandler):
         connPool = cls.getPool()
         connection = connPool.getconn()
         # Asegurar codificación UTF8 para evitar errores de caracteres especiales
-        connection.set_client_encoding('UTF8')
-        
+        connection.set_client_encoding("UTF8")
+
         try:
             yield connection
         except Exception as e:
@@ -71,12 +70,12 @@ class Psycopg2Database(IDatabaseHandler):
     def executeRawQuery(cls, query, params=None, fetch=False):
         """
         Ejecuta una consulta SQL nativa de manera segura contra inyecciones SQL.
-        
+
         Args:
             query (str): Sentencia SQL a ejecutar.
             params (tuple, optional): Parámetros para la consulta.
             fetch (bool): Si se desea retornar los resultados.
-            
+
         Returns:
             list: Resultados de la consulta si fetch=True, de lo contrario None.
         """
@@ -86,7 +85,6 @@ class Psycopg2Database(IDatabaseHandler):
                 results = cursor.fetchall() if fetch else None
                 conn.commit()
                 return results
-
 
     @classmethod
     def testConnection(cls):

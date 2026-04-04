@@ -3,6 +3,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 import uuid
 
+
 class BaseEntity(SQLModel):
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
@@ -19,5 +20,5 @@ class BaseEntity(SQLModel):
         nullable=False,
         sa_column_kwargs={
             "onupdate": datetime.datetime.utcnow,
-        }
+        },
     )

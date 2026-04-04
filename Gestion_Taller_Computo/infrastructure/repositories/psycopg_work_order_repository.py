@@ -38,15 +38,25 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
             RETURNING id;
         """
         params = (
-            str(order.id), order.created_at, order.updated_at,
-            order.ticket_number, order.status.value,
+            str(order.id),
+            order.created_at,
+            order.updated_at,
+            order.ticket_number,
+            order.status.value,
             str(order.device_id),
             str(order.technician_id) if order.technician_id else None,
-            order.diagnostic_notes, order.repair_notes,
+            order.diagnostic_notes,
+            order.repair_notes,
             order.quoted_price,
-            order.priority.value if hasattr(order.priority, "value") else str(order.priority),
+            (
+                order.priority.value
+                if hasattr(order.priority, "value")
+                else str(order.priority)
+            ),
             order.due_date,
-            order.estimated_hours, order.actual_hours, order.actual_delivery,
+            order.estimated_hours,
+            order.actual_hours,
+            order.actual_delivery,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return order
@@ -99,11 +109,18 @@ class Psycopg2WorkOrderRepository(IWorkOrderRepository):
         params = (
             order.status.value,
             str(order.technician_id) if order.technician_id else None,
-            order.diagnostic_notes, order.repair_notes,
+            order.diagnostic_notes,
+            order.repair_notes,
             order.quoted_price,
-            order.priority.value if hasattr(order.priority, "value") else str(order.priority),
+            (
+                order.priority.value
+                if hasattr(order.priority, "value")
+                else str(order.priority)
+            ),
             order.due_date,
-            order.estimated_hours, order.actual_hours, order.actual_delivery,
+            order.estimated_hours,
+            order.actual_hours,
+            order.actual_delivery,
             order.updated_at,
             str(order.id),
         )

@@ -2,9 +2,10 @@ from sqlmodel import Field
 from typing import Optional
 from .base import BaseEntity
 
+
 class Supplier(BaseEntity, table=True):
     __tablename__: str = "suppliers"
-    
+
     name: str = Field(index=True, nullable=False)
     contact_name: Optional[str] = Field(default=None)
     email: Optional[str] = Field(default=None)

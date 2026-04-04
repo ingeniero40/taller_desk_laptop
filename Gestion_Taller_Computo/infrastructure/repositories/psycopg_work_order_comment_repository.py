@@ -17,15 +17,25 @@ class Psycopg2WorkOrderCommentRepository:
             (id, created_at, updated_at, work_order_id, author_id, author_name, content, is_internal)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;
         """
-        self.db.executeRawQuery(q, (
-            str(comment.id), comment.created_at, comment.updated_at,
-            str(comment.work_order_id),
-            str(comment.author_id) if comment.author_id else None,
-            comment.author_name, comment.content, comment.is_internal,
-        ), fetch=True)
+        self.db.executeRawQuery(
+            q,
+            (
+                str(comment.id),
+                comment.created_at,
+                comment.updated_at,
+                str(comment.work_order_id),
+                str(comment.author_id) if comment.author_id else None,
+                comment.author_name,
+                comment.content,
+                comment.is_internal,
+            ),
+            fetch=True,
+        )
         return comment
 
-    def findByOrderId(self, order_id: uuid.UUID, include_internal: bool = True) -> List[WorkOrderComment]:
+    def findByOrderId(
+        self, order_id: uuid.UUID, include_internal: bool = True
+    ) -> List[WorkOrderComment]:
         if include_internal:
             q = f"SELECT {self._COLS} FROM work_order_comments WHERE work_order_id=%s ORDER BY created_at ASC"
             rows = self.db.executeRawQuery(q, (str(order_id),), fetch=True)
@@ -38,7 +48,8 @@ class Psycopg2WorkOrderCommentRepository:
         # 0:id 1:created_at 2:updated_at 3:work_order_id 4:author_id 5:author_name 6:content 7:is_internal
         return WorkOrderComment(
             id=uuid.UUID(str(row[0])),
-            created_at=row[1], updated_at=row[2],
+            created_at=row[1],
+            updated_at=row[2],
             work_order_id=uuid.UUID(str(row[3])),
             author_id=uuid.UUID(str(row[4])) if row[4] else None,
             author_name=row[5],

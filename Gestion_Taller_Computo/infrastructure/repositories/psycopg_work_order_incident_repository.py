@@ -21,13 +21,21 @@ class Psycopg2WorkOrderIncidentRepository:
              problem_found, solution_applied, is_resolved, resolved_at)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;
         """
-        self.db.executeRawQuery(q, (
-            str(incident.id), incident.created_at, incident.updated_at,
-            str(incident.work_order_id),
-            str(incident.reported_by_id) if incident.reported_by_id else None,
-            incident.problem_found, incident.solution_applied,
-            incident.is_resolved, incident.resolved_at,
-        ), fetch=True)
+        self.db.executeRawQuery(
+            q,
+            (
+                str(incident.id),
+                incident.created_at,
+                incident.updated_at,
+                str(incident.work_order_id),
+                str(incident.reported_by_id) if incident.reported_by_id else None,
+                incident.problem_found,
+                incident.solution_applied,
+                incident.is_resolved,
+                incident.resolved_at,
+            ),
+            fetch=True,
+        )
         return incident
 
     def findByOrderId(self, order_id: uuid.UUID) -> List[WorkOrderIncident]:
@@ -52,7 +60,8 @@ class Psycopg2WorkOrderIncidentRepository:
         # 5:problem_found 6:solution_applied 7:is_resolved 8:resolved_at
         return WorkOrderIncident(
             id=uuid.UUID(str(row[0])),
-            created_at=row[1], updated_at=row[2],
+            created_at=row[1],
+            updated_at=row[2],
             work_order_id=uuid.UUID(str(row[3])),
             reported_by_id=uuid.UUID(str(row[4])) if row[4] else None,
             problem_found=row[5],

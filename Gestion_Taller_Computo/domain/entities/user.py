@@ -3,9 +3,10 @@ from typing import Optional
 from .base import BaseEntity
 from ..value_objects.user_role import UserRole
 
+
 class User(BaseEntity, table=True):
     __tablename__: str = "users"
-    
+
     username: str = Field(unique=True, index=True, nullable=False)
     email: str = Field(unique=True, index=True, nullable=False)
     password_hash: str = Field(nullable=False)

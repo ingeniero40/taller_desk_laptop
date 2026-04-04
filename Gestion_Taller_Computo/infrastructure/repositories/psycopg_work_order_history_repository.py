@@ -31,11 +31,15 @@ class Psycopg2WorkOrderHistoryRepository:
             RETURNING id;
         """
         params = (
-            str(entry.id), entry.created_at, entry.updated_at,
+            str(entry.id),
+            entry.created_at,
+            entry.updated_at,
             str(entry.work_order_id),
             str(entry.changed_by_id) if entry.changed_by_id else None,
-            entry.from_status, entry.to_status,
-            entry.notes, entry.changed_at,
+            entry.from_status,
+            entry.to_status,
+            entry.notes,
+            entry.changed_at,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return entry

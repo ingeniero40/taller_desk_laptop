@@ -5,11 +5,12 @@ from ...domain.entities.device import Device
 from ...domain.interfaces.device_repository import IDeviceRepository
 from ..database.psycopg_db import Psycopg2Database
 
+
 class Psycopg2DeviceRepository(IDeviceRepository):
     """
     Implementación del repositorio de dispositivos utilizando Psycopg2.
     """
-    
+
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
 
@@ -23,9 +24,17 @@ class Psycopg2DeviceRepository(IDeviceRepository):
             RETURNING id;
         """
         params = (
-            str(device.id), device.created_at, device.updated_at,
-            device.brand, device.model, device.serial_number, str(device.customer_id),
-            device.physical_condition, device.accessories, device.photo_url, device.device_type
+            str(device.id),
+            device.created_at,
+            device.updated_at,
+            device.brand,
+            device.model,
+            device.serial_number,
+            str(device.customer_id),
+            device.physical_condition,
+            device.accessories,
+            device.photo_url,
+            device.device_type,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return device
@@ -67,9 +76,16 @@ class Psycopg2DeviceRepository(IDeviceRepository):
             WHERE id = %s
         """
         params = (
-            device.brand, device.model, device.serial_number, str(device.customer_id),
-            device.physical_condition, device.accessories, device.photo_url,
-            device.device_type, device.updated_at, str(device.id)
+            device.brand,
+            device.model,
+            device.serial_number,
+            str(device.customer_id),
+            device.physical_condition,
+            device.accessories,
+            device.photo_url,
+            device.device_type,
+            device.updated_at,
+            str(device.id),
         )
         self.db.executeRawQuery(query, params)
         return device

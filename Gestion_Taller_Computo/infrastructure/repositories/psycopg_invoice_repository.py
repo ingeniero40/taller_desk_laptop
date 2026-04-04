@@ -6,6 +6,7 @@ from ...domain.interfaces.invoice_repository import IInvoiceRepository
 from ...domain.value_objects.billing_types import InvoiceStatus
 from ..database.psycopg_db import Psycopg2Database
 
+
 class Psycopg2InvoiceRepository(IInvoiceRepository):
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
@@ -20,11 +21,18 @@ class Psycopg2InvoiceRepository(IInvoiceRepository):
             RETURNING id;
         """
         params = (
-            str(invoice.id), invoice.created_at, invoice.updated_at,
-            invoice.invoice_number, str(invoice.customer_id),
+            str(invoice.id),
+            invoice.created_at,
+            invoice.updated_at,
+            invoice.invoice_number,
+            str(invoice.customer_id),
             str(invoice.work_order_id) if invoice.work_order_id else None,
-            invoice.subtotal, invoice.tax, invoice.total, invoice.amount_paid,
-            invoice.status.value, invoice.due_date
+            invoice.subtotal,
+            invoice.tax,
+            invoice.total,
+            invoice.amount_paid,
+            invoice.status.value,
+            invoice.due_date,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return invoice
@@ -67,8 +75,10 @@ class Psycopg2InvoiceRepository(IInvoiceRepository):
             WHERE id = %s
         """
         params = (
-            invoice.amount_paid, invoice.status.value, invoice.updated_at,
-            str(invoice.id)
+            invoice.amount_paid,
+            invoice.status.value,
+            invoice.updated_at,
+            str(invoice.id),
         )
         self.db.executeRawQuery(query, params)
         return invoice
@@ -79,7 +89,7 @@ class Psycopg2InvoiceRepository(IInvoiceRepository):
         return [self._map_row_to_entity(row) for row in results]
 
     def _map_row_to_entity(self, row) -> Invoice:
-        # id, created_at, updated_at, invoice_number, customer_id, work_order_id, 
+        # id, created_at, updated_at, invoice_number, customer_id, work_order_id,
         # subtotal, tax, total, amount_paid, status, due_date
         return Invoice(
             id=uuid.UUID(str(row[0])),
@@ -93,5 +103,5 @@ class Psycopg2InvoiceRepository(IInvoiceRepository):
             total=float(row[8]),
             amount_paid=float(row[9]),
             status=InvoiceStatus(row[10]),
-            due_date=row[11]
+            due_date=row[11],
         )

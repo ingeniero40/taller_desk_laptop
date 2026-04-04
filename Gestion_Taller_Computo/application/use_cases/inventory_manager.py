@@ -5,25 +5,30 @@ from ...domain.interfaces.product_repository import IProductRepository
 from ...domain.interfaces.supplier_repository import ISupplierRepository
 import uuid
 
+
 class InventoryManager:
     """
     Caso de uso para la gestión de inventario y proveedores.
     """
-    
-    def __init__(self, product_repo: IProductRepository, supplier_repo: ISupplierRepository):
+
+    def __init__(
+        self, product_repo: IProductRepository, supplier_repo: ISupplierRepository
+    ):
         self.product_repo = product_repo
         self.supplier_repo = supplier_repo
 
     # --- Gestión de Proveedores ---
-    
-    def register_supplier(self, name: str, contact: str = None, email: str = None, 
-                         phone: str = None, address: str = None) -> Supplier:
+
+    def register_supplier(
+        self,
+        name: str,
+        contact: str = None,
+        email: str = None,
+        phone: str = None,
+        address: str = None,
+    ) -> Supplier:
         new_supplier = Supplier(
-            name=name,
-            contact_name=contact,
-            email=email,
-            phone=phone,
-            address=address
+            name=name, contact_name=contact, email=email, phone=phone, address=address
         )
         return self.supplier_repo.create(new_supplier)
 
@@ -32,16 +37,24 @@ class InventoryManager:
 
     # --- Gestión de Productos ---
 
-    def add_product(self, sku: str, name: str, cost: float, price: float, 
-                    stock: int = 0, min_stock: int = 5, category: str = "Repuestos",
-                    supplier_id: uuid.UUID = None) -> Product:
+    def add_product(
+        self,
+        sku: str,
+        name: str,
+        cost: float,
+        price: float,
+        stock: int = 0,
+        min_stock: int = 5,
+        category: str = "Repuestos",
+        supplier_id: uuid.UUID = None,
+    ) -> Product:
         """
         Agrega un producto al inventario validando SKU único.
         """
         existing = self.product_repo.findBySku(sku)
         if existing:
             raise ValueError(f"Ya existe un producto con SKU '{sku}'.")
-            
+
         new_product = Product(
             sku=sku,
             name=name,
@@ -50,7 +63,7 @@ class InventoryManager:
             stock=stock,
             min_stock=min_stock,
             category=category,
-            supplier_id=supplier_id
+            supplier_id=supplier_id,
         )
         return self.product_repo.create(new_product)
 

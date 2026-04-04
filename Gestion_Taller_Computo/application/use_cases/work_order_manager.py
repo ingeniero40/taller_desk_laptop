@@ -159,10 +159,7 @@ class WorkOrderManager:
             WorkOrderStatus.IN_REPAIR,
             WorkOrderStatus.ON_HOLD,
         ]
-        return [
-            o for o in self.repository.findAll()
-            if o.status in pending_states
-        ]
+        return [o for o in self.repository.findAll() if o.status in pending_states]
 
     # ── Auditoría Interna ─────────────────────────────────────────────────
 

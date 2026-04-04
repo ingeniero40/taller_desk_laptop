@@ -5,11 +5,12 @@ from ...domain.entities.supplier import Supplier
 from ...domain.interfaces.supplier_repository import ISupplierRepository
 from ..database.psycopg_db import Psycopg2Database
 
+
 class Psycopg2SupplierRepository(ISupplierRepository):
     """
     Implementación del repositorio de proveedores con Psycopg2.
     """
-    
+
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
 
@@ -20,9 +21,15 @@ class Psycopg2SupplierRepository(ISupplierRepository):
             RETURNING id;
         """
         params = (
-            str(supplier.id), supplier.created_at, supplier.updated_at, 
-            supplier.name, supplier.contact_name, supplier.email, 
-            supplier.phone, supplier.address, supplier.is_active
+            str(supplier.id),
+            supplier.created_at,
+            supplier.updated_at,
+            supplier.name,
+            supplier.contact_name,
+            supplier.email,
+            supplier.phone,
+            supplier.address,
+            supplier.is_active,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return supplier
@@ -51,9 +58,14 @@ class Psycopg2SupplierRepository(ISupplierRepository):
             WHERE id = %s
         """
         params = (
-            supplier.name, supplier.contact_name, supplier.email, 
-            supplier.phone, supplier.address, supplier.is_active,
-            supplier.updated_at, str(supplier.id)
+            supplier.name,
+            supplier.contact_name,
+            supplier.email,
+            supplier.phone,
+            supplier.address,
+            supplier.is_active,
+            supplier.updated_at,
+            str(supplier.id),
         )
         self.db.executeRawQuery(query, params)
         return supplier
@@ -82,5 +94,5 @@ class Psycopg2SupplierRepository(ISupplierRepository):
             email=row[5],
             phone=row[6],
             address=row[7],
-            is_active=row[8]
+            is_active=row[8],
         )

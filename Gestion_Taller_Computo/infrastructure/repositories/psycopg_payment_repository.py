@@ -6,6 +6,7 @@ from ...domain.interfaces.payment_repository import IPaymentRepository
 from ...domain.value_objects.billing_types import PaymentMethod
 from ..database.psycopg_db import Psycopg2Database
 
+
 class Psycopg2PaymentRepository(IPaymentRepository):
     def __init__(self, db_handler: Psycopg2Database = None):
         self.db = db_handler or Psycopg2Database()
@@ -20,10 +21,14 @@ class Psycopg2PaymentRepository(IPaymentRepository):
             RETURNING id;
         """
         params = (
-            str(payment.id), payment.created_at, payment.updated_at,
-            str(payment.invoice_id), payment.amount, 
-            payment.payment_method.value, payment.transaction_reference,
-            payment.payment_date
+            str(payment.id),
+            payment.created_at,
+            payment.updated_at,
+            str(payment.invoice_id),
+            payment.amount,
+            payment.payment_method.value,
+            payment.transaction_reference,
+            payment.payment_date,
         )
         self.db.executeRawQuery(query, params, fetch=True)
         return payment
@@ -56,5 +61,5 @@ class Psycopg2PaymentRepository(IPaymentRepository):
             amount=float(row[4]),
             payment_method=PaymentMethod(row[5]),
             transaction_reference=row[6],
-            payment_date=row[7]
+            payment_date=row[7],
         )
