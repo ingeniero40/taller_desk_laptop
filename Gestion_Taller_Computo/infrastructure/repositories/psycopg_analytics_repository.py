@@ -73,12 +73,15 @@ class Psycopg2AnalyticsRepository(IAnalyticsRepository):
 
     def get_top_moving_products(self, limit: int = 5) -> List[Dict[str, Any]]:
         """
-        Basado en el nivel de stock (como proxy para uso, ya que aún no tenemos tabla de 'consumo').
+        Calcula los productos con más actividad (IN/OUT) basado en la tabla de movimientos.
         """
         query = """
-            SELECT name, sku, stock, min_stock, category 
-            FROM products 
-            ORDER BY stock ASC 
+            SELECT p.name, p.sku, p.stock, p.min_stock, p.category, 
+                   COALESCE(SUM(ABS(m.quantity)), 0) as total_movement
+            FROM products p
+            LEFT JOIN inventory_movements m ON p.id = m.product_id
+            GROUP BY p.id, p.name, p.sku, p.stock, p.min_stock, p.category
+            ORDER BY total_movement DESC
             LIMIT %s;
         """
         results = self.db.executeRawQuery(query, (limit,), fetch=True)
@@ -92,6 +95,7 @@ class Psycopg2AnalyticsRepository(IAnalyticsRepository):
                     "stock": int(row[2]),
                     "min_stock": int(row[3]),
                     "category": row[4],
+                    "activity": int(row[5])
                 }
             )
         return top_list

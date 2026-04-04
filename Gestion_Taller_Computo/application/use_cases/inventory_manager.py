@@ -133,3 +133,19 @@ class InventoryManager:
         """
         all_products = self.product_repo.findAll()
         return sum(p.stock * p.cost_price for p in all_products)
+
+    def get_product_movement_history(self, product_id: uuid.UUID) -> List[InventoryMovement]:
+        """
+        Recupera el historial de movimientos de un producto específico.
+        """
+        if not self.movement_repo:
+            return []
+        return self.movement_repo.findByProductId(product_id)
+
+    def get_all_movements(self) -> List[InventoryMovement]:
+        """
+        Recupera todos los movimientos del inventario (para reportes).
+        """
+        if not self.movement_repo:
+            return []
+        return self.movement_repo.findAll()

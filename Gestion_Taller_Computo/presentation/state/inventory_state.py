@@ -45,8 +45,11 @@ class InventoryState(rx.State):
     
     # Modales de Stock
     show_stock_modal: bool = False
+    show_movements_modal: bool = False
     stock_adjustment: int = 0
     selected_product_id: str = ""
+    selected_product_name: str = ""
+    product_movements: List[Dict[str, Any]] = []
     
     # Carga de datos
     is_loading: bool = True
@@ -224,3 +227,32 @@ class InventoryState(rx.State):
             return self.fetch_all_data()
         except Exception as e:
             return rx.window_alert(f"Error al ajustar stock: {str(e)}")
+
+    @rx.event
+    def open_movements_history(self, product_id: str, product_name: str):
+        """Carga y muestra el historial de movimientos de un producto."""
+        self.selected_product_id = product_id
+        self.selected_product_name = product_name
+        self.product_movements = []
+        self.show_movements_modal = True
+        
+        try:
+            prod_repo = Psycopg2ProductRepository()
+            supp_repo = Psycopg2SupplierRepository()
+            mov_repo = Psycopg2InventoryMovementRepository()
+            mgr = InventoryManager(prod_repo, supp_repo, mov_repo)
+            
+            movements = mgr.get_product_movement_history(uuid.UUID(product_id))
+            self.product_movements = [self._mov_to_dict(m) for m in movements]
+        except Exception as e:
+            print(f"Error fetching history: {e}")
+
+    def _mov_to_dict(self, m: Any) -> Dict[str, Any]:
+        return {
+            "id": str(m.id),
+            "date": m.created_at.strftime("%Y-%m-%d %H:%M"),
+            "type": m.movement_type,
+            "quantity": m.quantity,
+            "notes": m.notes or "---",
+            "type_color": "green" if m.movement_type == "IN" else "red" if m.movement_type == "OUT" else "amber"
+        }

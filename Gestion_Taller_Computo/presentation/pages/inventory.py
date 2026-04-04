@@ -161,6 +161,16 @@ def product_table() -> rx.Component:
                                 ),
                                 rx.tooltip(
                                     rx.icon_button(
+                                        rx.icon(tag="history", size=16),
+                                        variant="soft",
+                                        color_scheme="indigo",
+                                        radius="full",
+                                        on_click=lambda: InventoryState.open_movements_history(p["id"], p["name"]),
+                                    ),
+                                    content="Ver Historial",
+                                ),
+                                rx.tooltip(
+                                    rx.icon_button(
                                         rx.icon(tag="pencil", size=16),
                                         variant="ghost",
                                         color_scheme="gray",
@@ -294,6 +304,66 @@ def stock_adjust_modal() -> rx.Component:
         on_open_change=InventoryState.set_show_stock_modal,
     )
 
+def history_modal() -> rx.Component:
+    """Modal premium para el historial de movimientos."""
+    return rx.dialog.root(
+        rx.dialog.content(
+             rx.vstack(
+                rx.hstack(
+                    rx.icon(tag="history", size=22, color=rx.color("indigo", 9)),
+                    rx.dialog.title(f"Historial: {InventoryState.selected_product_name}", margin="0"),
+                    spacing="3",
+                    align="center",
+                ),
+                rx.separator(width="100%"),
+                rx.scroll_area(
+                    rx.vstack(
+                        rx.foreach(
+                            InventoryState.product_movements,
+                            lambda m: rx.box(
+                                rx.hstack(
+                                    rx.badge(m["type"], color_scheme=m["type_color"], variant="surface", size="1"),
+                                    rx.vstack(
+                                        rx.hstack(
+                                            rx.text(f"Cantidad: {m['quantity']}", weight="bold", size="2"),
+                                            rx.spacer(),
+                                            rx.text(m["date"], size="1", color=rx.color("slate", 10)),
+                                        ),
+                                        rx.text(m["notes"], size="2", color=rx.color("slate", 11)),
+                                        spacing="1",
+                                    ),
+                                    spacing="3",
+                                    width="100%",
+                                    align="start",
+                                ),
+                                padding="12px",
+                                border_radius="12px",
+                                border=f"1px solid {rx.color('slate', 4)}",
+                                background=rx.color("slate", 2),
+                                width="100%",
+                            )
+                        ),
+                        spacing="3",
+                        width="100%",
+                    ),
+                    height="300px",
+                ),
+                rx.hstack(
+                    rx.dialog.close(rx.button("Cerrar", variant="soft", color_scheme="gray", radius="large")),
+                    justify="end",
+                    width="100%",
+                ),
+                spacing="4",
+                width="100%",
+             ),
+             max_width="500px",
+             border_radius="28px",
+             padding="32px",
+        ),
+        open=InventoryState.show_movements_modal,
+        on_open_change=InventoryState.set_show_movements_modal,
+    )
+
 def inventory_page() -> rx.Component:
     """Layout principal de la página de inventario."""
     return rx.hstack(
@@ -305,6 +375,7 @@ def inventory_page() -> rx.Component:
                 product_table(),
                 add_product_modal(),
                 stock_adjust_modal(),
+                history_modal(),
                 spacing="6",
                 padding_bottom="60px",
                 width="100%",

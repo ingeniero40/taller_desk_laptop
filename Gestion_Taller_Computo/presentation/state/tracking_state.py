@@ -238,6 +238,7 @@ class TrackingState(rx.State):
 
                 row = {
                     "id":             str(o.id),
+                    "customer_id":    str(customer.id) if customer else "",
                     "ticket":         o.ticket_number,
                     "status":         status_val,
                     "status_label":   STATUS_LABELS.get(status_val, status_val),
@@ -287,6 +288,7 @@ class TrackingState(rx.State):
         self.selected_order = order
         self.show_detail    = True
         self.active_tab     = "info"
+        self.quote_amount   = order.get("price", 0.0)
         self._load_comments(order["id"])
         self._load_incidents(order["id"])
 
@@ -503,3 +505,80 @@ class TrackingState(rx.State):
             
         except Exception as e:
             return rx.window_alert(f"Error al consumir repuesto: {e}")
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Presupuestos y Facturación
+    # ─────────────────────────────────────────────────────────────────────
+    quote_amount: float = 0.0
+
+    @rx.event
+    def set_quote_amount(self, val: str):
+        try:
+            self.quote_amount = float(val) if val else 0.0
+        except ValueError:
+            self.quote_amount = 0.0
+
+    @rx.event
+    def update_quote(self):
+        order_id = self.selected_order.get("id")
+        if not order_id: return
+        try:
+            from ...infrastructure.repositories.psycopg_work_order_repository import Psycopg2WorkOrderRepository
+            repo = Psycopg2WorkOrderRepository()
+            order = repo.findById(uuid.UUID(order_id))
+            if order:
+                order.quoted_price = self.quote_amount
+                repo.update(order)
+                
+                # Auto-comentario
+                comment_repo = Psycopg2WorkOrderCommentRepository()
+                c = WorkOrderComment(
+                    work_order_id=uuid.UUID(order_id),
+                    author_name="Sistema (Finanzas)",
+                    content=f"La cotización fue actualizada a ${self.quote_amount:.2f}. Pendiente de aprobación del cliente.",
+                    is_internal=True
+                )
+                comment_repo.create(c)
+                
+                self.fetch_all_data()
+                # Actualizar el precio de la selección_actual
+                self.selected_order["price"] = self.quote_amount
+                self._load_comments(order_id)
+                return rx.window_alert("Cotización actualizada.")
+        except Exception as e:
+            return rx.window_alert(f"Error: {e}")
+
+    @rx.event
+    def generate_invoice(self):
+        order_id = self.selected_order.get("id")
+        customer_id = self.selected_order.get("customer_id")
+        amount = self.selected_order.get("price", 0.0)
+
+        if not order_id or not customer_id:
+            return rx.window_alert("Faltan datos de la orden o del cliente.")
+
+        try:
+            from ...infrastructure.repositories.psycopg_invoice_repository import Psycopg2InvoiceRepository
+            from ...infrastructure.repositories.psycopg_payment_repository import Psycopg2PaymentRepository
+            from ...application.use_cases.billing_manager import BillingManager
+
+            mgr = BillingManager(Psycopg2InvoiceRepository(), Psycopg2PaymentRepository())
+            invoice = mgr.create_invoice_from_work_order(
+                work_order_id=uuid.UUID(order_id),
+                customer_id=uuid.UUID(customer_id),
+                amount=float(amount)
+            )
+            
+            # Auto-comentario
+            c = WorkOrderComment(
+                work_order_id=uuid.UUID(order_id),
+                author_name="Sistema (Finanzas)",
+                content=f"Se generó la factura {invoice.invoice_number} por el importe de ${amount:.2f}.",
+                is_internal=False
+            )
+            Psycopg2WorkOrderCommentRepository().create(c)
+            self._load_comments(order_id)
+
+            return rx.window_alert(f"¡Factura {invoice.invoice_number} generada con éxito!")
+        except Exception as e:
+            return rx.window_alert(f"Error al generar factura: {e}")

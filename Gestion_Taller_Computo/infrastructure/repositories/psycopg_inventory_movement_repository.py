@@ -41,6 +41,11 @@ class Psycopg2InventoryMovementRepository(IInventoryMovementRepository):
         results = self.db.executeRawQuery(query, (reference_id,), fetch=True)
         return [self._map_row(row) for row in results]
 
+    def findAll(self, limit: int = 50) -> List[InventoryMovement]:
+        query = "SELECT * FROM inventory_movements ORDER BY created_at DESC LIMIT %s"
+        results = self.db.executeRawQuery(query, (limit,), fetch=True)
+        return [self._map_row(row) for row in results]
+
     def _map_row(self, row) -> InventoryMovement:
         return InventoryMovement(
             id=uuid.UUID(str(row[0])),

@@ -10,20 +10,53 @@ def billing_header() -> rx.Component:
         "Seguimiento de ingresos, saldos y pagos de clientes.",
         actions=[
             rx.button(
-                rx.icon(tag="receipt", size=18),
-                rx.text("Nueva Factura"),
+                rx.icon(tag="file-text", size=18),
+                rx.text("Nuevo Presupuesto"),
+                on_click=lambda: BillingState.set_show_quote_modal(True),
                 color_scheme="cyan",
                 variant="solid",
                 radius="large",
             ),
             rx.button(
                 rx.icon(tag="refresh-cw", size=18),
-                on_click=BillingState.fetch_invoices,
+                on_click=BillingState.fetch_all_docs,
                 variant="soft",
                 color_scheme="gray",
                 radius="large",
             ),
         ]
+    )
+
+def billing_summary() -> rx.Component:
+    """Resumen financiero rápido."""
+    return rx.grid(
+        rx.card(
+            rx.vstack(
+                rx.text("Total Facturado", size="2", color_scheme="gray"),
+                rx.heading("$12,450.00", size="6"), # Placeholder for aggregate state later
+                spacing="1",
+            ),
+            variant="surface",
+        ),
+        rx.card(
+            rx.vstack(
+                rx.text("Pendiente de Cobro", size="2", color_scheme="gray"),
+                rx.heading("$3,120.00", size="6", color_scheme="red"),
+                spacing="1",
+            ),
+            variant="surface",
+        ),
+        rx.card(
+            rx.vstack(
+                rx.text("Presupuestos Aprobados", size="2", color_scheme="gray"),
+                rx.heading("12", size="6", color_scheme="indigo"),
+                spacing="1",
+            ),
+            variant="surface",
+        ),
+        columns="3",
+        spacing="4",
+        width="100%",
     )
 
 def invoice_table() -> rx.Component:
@@ -62,6 +95,67 @@ def invoice_table() -> rx.Component:
                             ),
                             rx.icon_button(
                                 rx.icon(tag="eye", size=16),
+                                variant="ghost",
+                                color_scheme="gray",
+                            ),
+                            spacing="2",
+                        )
+                    )
+                )
+            )
+        )
+    )
+
+def quote_table() -> rx.Component:
+    """Tabla de presupuestos."""
+    return rx.table.root(
+        rx.table.header(
+            rx.table.row(
+                rx.table.column_header_cell("No. Presupuesto"),
+                rx.table.column_header_cell("Resumen"),
+                rx.table.column_header_cell("Expiración"),
+                rx.table.column_header_cell("Total"),
+                rx.table.column_header_cell("Estado"),
+                rx.table.column_header_cell("Acciones"),
+            )
+        ),
+        rx.table.body(
+            rx.foreach(
+                BillingState.quotes,
+                lambda q: rx.table.row(
+                    rx.table.cell(rx.text(q["number"], weight="bold")),
+                    rx.table.cell(rx.text(q["items"], size="2")),
+                    rx.table.cell(rx.text(q["expiry"])),
+                    rx.table.cell(rx.text(f"${q['total']}", weight="bold")),
+                    rx.table.cell(
+                        rx.badge(
+                            q["status"],
+                            color_scheme=q["status_color"],
+                            variant="soft",
+                        )
+                    ),
+                    rx.table.cell(
+                        rx.hstack(
+                            rx.cond(
+                                q["status"] == "APPROVED",
+                                rx.icon_button(
+                                    rx.icon(tag="file-check", size=16),
+                                    variant="soft",
+                                    color_scheme="indigo",
+                                    on_click=lambda: BillingState.convert_quote_to_invoice(q["id"]),
+                                ),
+                            ),
+                            rx.cond(
+                                (q["status"] == "DRAFT") | (q["status"] == "SENT"),
+                                rx.icon_button(
+                                    rx.icon(tag="check", size=16),
+                                    variant="soft",
+                                    color_scheme="green",
+                                    on_click=lambda: BillingState.approve_quote(q["id"]),
+                                ),
+                            ),
+                            rx.icon_button(
+                                rx.icon(tag="printer", size=16),
                                 variant="ghost",
                                 color_scheme="gray",
                             ),
@@ -128,6 +222,58 @@ def payment_modal() -> rx.Component:
         on_open_change=BillingState.set_show_payment_modal,
     )
 
+def quote_modal() -> rx.Component:
+    """Modal para crear un nuevo presupuesto."""
+    return rx.dialog.root(
+        rx.dialog.content(
+            rx.dialog.title("Nuevo Presupuesto"),
+            rx.dialog.description("Complete los detalles del presupuesto para el cliente."),
+            rx.form(
+                rx.vstack(
+                    rx.text("ID del Cliente (UUID)", size="2", weight="bold"),
+                    rx.input(
+                        placeholder="Ej: 550e8400-e29b-41d4-a716-446655440000",
+                        name="customer_id",
+                        width="100%",
+                        required=True,
+                    ),
+                    rx.text("ID Orden de Trabajo (Opcional)", size="2", weight="bold"),
+                    rx.input(
+                        name="work_order_id",
+                        width="100%",
+                    ),
+                    rx.text("Resumen de Servicios", size="2", weight="bold"),
+                    rx.text_area(
+                        placeholder="Reparación de placa base, cambio de pantalla...",
+                        name="items_summary",
+                        width="100%",
+                    ),
+                    rx.text("Monto Total (IVA Incluido)", size="2", weight="bold"),
+                    rx.input(
+                        type="number",
+                        name="amount",
+                        width="100%",
+                        required=True,
+                    ),
+                    rx.hstack(
+                        rx.dialog.close(
+                            rx.button("Cancelar", variant="soft", color_scheme="gray")
+                        ),
+                        rx.button("Guardar Presupuesto", type="submit", color_scheme="cyan"),
+                        width="100%",
+                        justify="end",
+                        spacing="3",
+                        padding_top="16px",
+                    ),
+                    spacing="3",
+                ),
+                on_submit=BillingState.save_quote,
+            ),
+            style={"max_width": "450px"},
+        ),
+        open=BillingState.show_quote_modal,
+    )
+
 def billing_page() -> rx.Component:
     """Layout de la página de facturación."""
     return rx.hstack(
@@ -135,8 +281,33 @@ def billing_page() -> rx.Component:
         rx.container(
             rx.vstack(
                 billing_header(),
-                invoice_table(),
+                billing_summary(),
+                rx.tabs.root(
+                    rx.tabs.list(
+                        rx.tabs.trigger("Facturas", value="invoices"),
+                        rx.tabs.trigger("Presupuestos", value="quotes"),
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            invoice_table(),
+                            spacing="4",
+                            padding_top="16px",
+                        ),
+                        value="invoices",
+                    ),
+                    rx.tabs.content(
+                        rx.vstack(
+                            quote_table(),
+                            spacing="4",
+                            padding_top="16px",
+                        ),
+                        value="quotes",
+                    ),
+                    default_value="invoices",
+                    width="100%",
+                ),
                 payment_modal(),
+                quote_modal(),
                 spacing="5",
                 padding_bottom="48px",
                 width="100%",

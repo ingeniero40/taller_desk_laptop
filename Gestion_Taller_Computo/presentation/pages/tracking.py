@@ -255,6 +255,7 @@ def detail_tabs() -> rx.Component:
         tab_btn("Comentarios",   "comments",   "message-square"),
         tab_btn("Incidencias",   "incidents",  "triangle-alert"),
         tab_btn("Repuestos",     "parts",      "package-plus"),
+        tab_btn("Finanzas",      "finance",    "dollar-sign"),
         spacing="2", width="100%", overflow_x="auto"
     )
 
@@ -638,6 +639,62 @@ def parts_tab() -> rx.Component:
     )
 
 
+def finance_tab() -> rx.Component:
+    return rx.vstack(
+        rx.text("Cotización y Presupuesto", size="3", weight="bold"),
+        rx.card(
+            rx.vstack(
+                rx.text("Monto Cotizado (Base + Repuestos + Mano de Obra)", size="2", weight="bold", color=rx.color("slate", 10)),
+                rx.hstack(
+                    rx.text("$", size="4", weight="bold", color=rx.color("cyan", 9)),
+                    rx.input(
+                        type="number", 
+                        value=TrackingState.quote_amount.to_string(), 
+                        on_change=TrackingState.set_quote_amount,
+                        size="3", width="100%",
+                    ),
+                    spacing="2", align_items="center"
+                ),
+                rx.button(
+                    rx.icon(tag="save", size=16),
+                    "Actualizar Presupuesto / Enviar al Cliente",
+                    on_click=TrackingState.update_quote,
+                    color_scheme="cyan", width="100%", size="3"
+                ),
+                spacing="3"
+            ),
+            padding="16px", background=rx.color("slate", 2), width="100%",
+        ),
+        
+        rx.divider(opacity=0.3),
+        
+        rx.text("Facturación", size="3", weight="bold"),
+        rx.card(
+            rx.vstack(
+                rx.hstack(
+                    rx.icon(tag="receipt", size=24, color=rx.color("green", 9)),
+                    rx.vstack(
+                        rx.text("Convertir Orden a Factura", size="2", weight="bold"),
+                        rx.text("Genera la factura oficial permitiendo luego procesar el pago del cliente (Efectivo/Tarjeta).", 
+                                size="1", color=rx.color("slate", 9)),
+                        spacing="0"
+                    ),
+                    spacing="3"
+                ),
+                rx.button(
+                    rx.icon(tag="file-text", size=16),
+                    "Emitir Factura de Orden",
+                    on_click=TrackingState.generate_invoice,
+                    color_scheme="green", width="100%", size="3"
+                ),
+                spacing="4"
+            ),
+            padding="16px", background=rx.color("green", 1), 
+            border=f"1px solid {rx.color('green', 5)}", width="100%",
+        ),
+        width="100%", spacing="5"
+    )
+
 def detail_panel() -> rx.Component:
     return rx.cond(
         TrackingState.show_detail,
@@ -679,6 +736,7 @@ def detail_panel() -> rx.Component:
                     rx.cond(TrackingState.active_tab == "comments",   comments_tab()),
                     rx.cond(TrackingState.active_tab == "incidents",  incidents_tab()),
                     rx.cond(TrackingState.active_tab == "parts",      parts_tab()),
+                    rx.cond(TrackingState.active_tab == "finance",    finance_tab()),
                     width="100%",
                 ),
                 spacing="4", width="100%",
