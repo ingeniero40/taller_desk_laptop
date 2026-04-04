@@ -3,11 +3,14 @@ from typing import List, Dict, Any, Optional
 import uuid
 from datetime import datetime, timedelta
 
+from ...domain.entities.audit_log import AuditLog
+from ...infrastructure.repositories.psycopg_audit_log_repository import Psycopg2AuditLogRepository
 from ...infrastructure.repositories.psycopg_work_order_repository import Psycopg2WorkOrderRepository
 from ...infrastructure.repositories.psycopg_work_order_comment_repository import Psycopg2WorkOrderCommentRepository
 from ...infrastructure.repositories.psycopg_work_order_incident_repository import Psycopg2WorkOrderIncidentRepository
 from ...infrastructure.repositories.psycopg_user_repository import Psycopg2UserRepository
 from ...infrastructure.repositories.psycopg_device_repository import Psycopg2DeviceRepository
+from ...infrastructure.services.notification_service import NotificationService
 from ...domain.entities.work_order_comment import WorkOrderComment
 from ...domain.entities.work_order_incident import WorkOrderIncident
 from ...domain.value_objects.work_order_status import WorkOrderStatus
@@ -670,6 +673,28 @@ class TrackingState(rx.State):
 
                 repo.update(order)
                 
+                # Contexto 12: Auditoría
+                audit_repo = Psycopg2AuditLogRepository()
+                audit_repo.create(AuditLog(
+                    action="WORK_ORDER_DELIVERED",
+                    module="TRACKING",
+                    entity_id=order_id,
+                    entity_type="WorkOrder",
+                    user_name="Administrador", # Debería venir del AuthState en producción 
+                    details=f"Entrega confirmada. Firma registrada: {bool(self.checkout_signature)}"
+                ))
+
+                # Contexto 12: Notificación
+                notif = NotificationService()
+                customer_name = self.selected_order.get("customer_name", "Cliente")
+                ticket = self.selected_order.get("ticket_number", "---")
+                notif.notify_order_status_change(
+                    customer_name=customer_name,
+                    phone="5551234567", # placeholder
+                    ticket=ticket,
+                    new_status="ENTREGADO"
+                )
+
                 # Auto-comentario de cierre
                 comment_repo = Psycopg2WorkOrderCommentRepository()
                 c = WorkOrderComment(
@@ -683,6 +708,6 @@ class TrackingState(rx.State):
                 self.show_checkout_modal = False
                 self.close_detail()
                 self.fetch_all_data()
-                return rx.window_alert("¡Equipo entregado con éxito!")
+                return rx.window_alert(f"¡Equipo {ticket} entregado con éxito! Notificación enviada.")
         except Exception as e:
             return rx.window_alert(f"Error en la entrega: {e}")

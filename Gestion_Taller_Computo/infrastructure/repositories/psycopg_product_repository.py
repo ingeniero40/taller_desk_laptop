@@ -42,7 +42,11 @@ class Psycopg2ProductRepository(IProductRepository):
         return product
 
     def findById(self, productId: uuid.UUID) -> Optional[Product]:
-        query = "SELECT * FROM products WHERE id = %s"
+        query = """
+            SELECT id, created_at, updated_at, sku, name, description, 
+                   cost_price, sale_price, stock, min_stock, category, supplier_id 
+            FROM products WHERE id = %s
+        """
         params = (str(productId),)
         results = self.db.executeRawQuery(query, params, fetch=True)
         if results:
@@ -50,7 +54,14 @@ class Psycopg2ProductRepository(IProductRepository):
         return None
 
     def findByBarcode(self, barcode: str) -> Optional[Product]:
-        query = "SELECT * FROM products WHERE barcode = %s"
+        # Como barcode no existe en el esquema devuelto por check_columns, 
+        # lo buscaremos por SKU si es necesario, o consideraremos que es una versión simplificada.
+        # Por ahora lo dejaremos como búsqueda por SKU para evitar errores.
+        query = """
+            SELECT id, created_at, updated_at, sku, name, description, 
+                   cost_price, sale_price, stock, min_stock, category, supplier_id 
+            FROM products WHERE sku = %s
+        """
         params = (barcode,)
         results = self.db.executeRawQuery(query, params, fetch=True)
         if results:
@@ -58,7 +69,11 @@ class Psycopg2ProductRepository(IProductRepository):
         return None
 
     def findBySku(self, sku: str) -> Optional[Product]:
-        query = "SELECT * FROM products WHERE sku = %s"
+        query = """
+            SELECT id, created_at, updated_at, sku, name, description, 
+                   cost_price, sale_price, stock, min_stock, category, supplier_id 
+            FROM products WHERE sku = %s
+        """
         params = (sku,)
         results = self.db.executeRawQuery(query, params, fetch=True)
         if results:
@@ -66,13 +81,21 @@ class Psycopg2ProductRepository(IProductRepository):
         return None
 
     def findByCategory(self, category: str) -> List[Product]:
-        query = "SELECT * FROM products WHERE category = %s"
+        query = """
+            SELECT id, created_at, updated_at, sku, name, description, 
+                   cost_price, sale_price, stock, min_stock, category, supplier_id 
+            FROM products WHERE category = %s
+        """
         params = (category,)
         results = self.db.executeRawQuery(query, params, fetch=True)
         return [self._map_row_to_entity(row) for row in results]
 
     def findAll(self) -> List[Product]:
-        query = "SELECT * FROM products"
+        query = """
+            SELECT id, created_at, updated_at, sku, name, description, 
+                   cost_price, sale_price, stock, min_stock, category, supplier_id 
+            FROM products
+        """
         results = self.db.executeRawQuery(query, fetch=True)
         return [self._map_row_to_entity(row) for row in results]
 
@@ -80,14 +103,13 @@ class Psycopg2ProductRepository(IProductRepository):
         product.updated_at = datetime.utcnow()
         query = """
             UPDATE products 
-            SET sku = %s, barcode = %s, name = %s, description = %s, cost_price = %s, 
+            SET sku = %s, name = %s, description = %s, cost_price = %s, 
                 sale_price = %s, stock = %s, min_stock = %s, category = %s, 
                 supplier_id = %s, updated_at = %s
             WHERE id = %s
         """
         params = (
             product.sku,
-            product.barcode,
             product.name,
             product.description,
             product.cost_price,
@@ -126,21 +148,21 @@ class Psycopg2ProductRepository(IProductRepository):
 
     def _map_row_to_entity(self, row) -> Product:
         """
-        Mapea fila de DB a Product.
-        Orden esperado: id, created_at, updated_at, sku, name, description, cost_price, sale_price, stock, min_stock, category, supplier_id
+        Mapea fila de DB a Product basándose en selección explícita.
+        Orden del SELECT: 0:id, 1:created_at, 2:updated_at, 3:sku, 4:name, 5:description, 6:cost, 7:sale, 8:stock, 9:min_stock, 10:category, 11:sup_id
         """
         return Product(
             id=uuid.UUID(str(row[0])),
             created_at=row[1],
             updated_at=row[2],
             sku=row[3],
-            barcode=row[4],
-            name=row[5],
-            description=row[6],
-            cost_price=float(row[7]),
-            sale_price=float(row[8]),
-            stock=int(row[9]),
-            min_stock=int(row[10]),
-            category=row[11],
-            supplier_id=uuid.UUID(str(row[12])) if row[12] else None,
+            barcode=None, # barcode no existe en el esquema actual
+            name=row[4],
+            description=row[5],
+            cost_price=float(row[6]),
+            sale_price=float(row[7]),
+            stock=int(row[8]),
+            min_stock=int(row[9]),
+            category=row[10],
+            supplier_id=uuid.UUID(str(row[11])) if row[11] else None,
         )
