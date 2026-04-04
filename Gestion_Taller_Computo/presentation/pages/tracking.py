@@ -461,7 +461,7 @@ def comments_tab() -> rx.Component:
                     rx.icon(tag="send", size=14),
                     rx.text("Enviar"),
                     on_click=TrackingState.add_comment,
-                    color_scheme="cyan", size="2",
+                    color_scheme="indigo", size="2",
                 ),
                 width="100%", align_items="center",
             ),
@@ -611,7 +611,7 @@ def parts_tab() -> rx.Component:
                 rx.icon(tag="package-plus", size=14),
                 rx.text("Usar repuesto"),
                 on_click=TrackingState.toggle_consume_form,
-                color_scheme="cyan", variant="soft", size="2",
+                color_scheme="indigo", variant="soft", size="2",
             ),
             width="100%", align_items="center"
         ),
@@ -647,7 +647,7 @@ def parts_tab() -> rx.Component:
                                 rx.button(
                                     "Confirmar Uso",
                                     on_click=TrackingState.consume_part,
-                                    color_scheme="cyan", size="2"
+                                    color_scheme="indigo", size="2"
                                 ),
                                 align_items="end", width="100%"
                             ),
@@ -700,7 +700,7 @@ def finance_tab() -> rx.Component:
                     rx.icon(tag="save", size=16),
                     "Actualizar Presupuesto / Enviar al Cliente",
                     on_click=TrackingState.update_quote,
-                    color_scheme="cyan", width="100%", size="3"
+                    color_scheme="indigo", width="100%", size="3"
                 ),
                 spacing="3"
             ),

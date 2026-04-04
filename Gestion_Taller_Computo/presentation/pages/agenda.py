@@ -152,7 +152,7 @@ def filter_bar() -> rx.Component:
             rx.text("Mostrando:", size="2", color=rx.color("slate", 10)),
             rx.badge(
                 AgendaState.filtered_tickets.length(),
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
             ),
             spacing="2",
@@ -265,7 +265,7 @@ def tickets_list() -> rx.Component:
             rx.text("Total en sistema:", size="2", color=rx.color("slate", 10)),
             rx.badge(
                 AgendaState.tickets.length(),
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
             ),
             spacing="2",
@@ -274,7 +274,7 @@ def tickets_list() -> rx.Component:
         rx.cond(
             AgendaState.is_loading,
             rx.center(
-                rx.spinner(size="3", color_scheme="cyan"),
+                rx.spinner(size="3", color_scheme="indigo"),
                 padding_y="40px",
                 width="100%",
             ),
@@ -354,7 +354,7 @@ def new_ticket_modal() -> rx.Component:
                     rx.button(
                         rx.icon(tag="save", size=16),
                         rx.text("Guardar Ticket"),
-                        color_scheme="cyan",
+                        color_scheme="indigo",
                         variant="solid",
                         radius="large",
                     ),
@@ -393,7 +393,7 @@ def agenda_page() -> rx.Component:
                             rx.icon(tag="plus", size=18),
                             rx.text("Nuevo Ticket"),
                             on_click=AgendaState.open_ticket_modal,
-                            color_scheme="cyan",
+                            color_scheme="indigo",
                             variant="solid",
                             radius="large",
                         ),

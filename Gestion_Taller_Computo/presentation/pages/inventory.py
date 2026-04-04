@@ -40,7 +40,7 @@ def inventory_header() -> rx.Component:
                 rx.icon(tag="plus", size=18),
                 rx.text("Nuevo Producto"),
                 on_click=InventoryState.open_add_product_modal,
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
                 radius="large",
                 size="3",
@@ -153,7 +153,7 @@ def product_table() -> rx.Component:
                                     rx.icon_button(
                                         rx.icon(tag="arrow-up-down", size=16),
                                         variant="soft",
-                                        color_scheme="cyan",
+                                        color_scheme="indigo",
                                         radius="full",
                                         on_click=lambda: InventoryState.open_adjust_stock_modal(p["id"]),
                                     ),
@@ -241,7 +241,7 @@ def add_product_modal() -> rx.Component:
                         ),
                         rx.hstack(
                             rx.dialog.close(rx.button("Cancelar", variant="soft", color_scheme="gray", size="3", radius="large")),
-                            rx.button("Guardar en Catálogo", type="submit", variant="solid", color_scheme="cyan", size="3", radius="large"),
+                            rx.button("Guardar en Catálogo", type="submit", variant="solid", color_scheme="indigo", size="3", radius="large"),
                             spacing="3",
                             width="100%",
                             justify="end",
@@ -287,7 +287,7 @@ def stock_adjust_modal() -> rx.Component:
                 ),
                 rx.hstack(
                     rx.dialog.close(rx.button("Cerrar", variant="soft", color_scheme="gray", radius="large")),
-                    rx.button("Confirmar", on_click=InventoryState.confirm_stock_adjustment, color_scheme="cyan", radius="large"),
+                    rx.button("Confirmar", on_click=InventoryState.confirm_stock_adjustment, color_scheme="indigo", radius="large"),
                     spacing="3",
                     width="100%",
                     justify="end",

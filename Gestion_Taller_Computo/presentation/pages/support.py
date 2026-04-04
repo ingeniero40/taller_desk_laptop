@@ -47,7 +47,7 @@ def contact_card(title: str, description: str, icon: str, button_text: str) -> r
         rx.text(title, weight="bold", size="4"),
         rx.text(description, size="2", color=rx.color("slate", 10), text_align="center"),
         rx.spacer(),
-        rx.button(button_text, variant="soft", color_scheme="cyan", width="100%"),
+        rx.button(button_text, variant="soft", color_scheme="indigo", width="100%"),
         spacing="3",
         padding="24px",
         border_radius="16px",

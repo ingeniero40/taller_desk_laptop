@@ -12,7 +12,7 @@ def settings_header() -> rx.Component:
             rx.button(
                 rx.icon(tag="save", size=18),
                 rx.text("Guardar Cambios"),
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
                 radius="large",
             ),
@@ -54,7 +54,7 @@ def users_tab() -> rx.Component:
                 rx.icon(tag="user-plus", size=16),
                 rx.text("Agregar Colaborador"),
                 on_click=SettingsState.open_add_user_modal,
-                size="2", variant="soft", color_scheme="cyan",
+                size="2", variant="soft", color_scheme="indigo",
             ),
             width="100%",
             align="center",
@@ -139,7 +139,7 @@ def user_modal() -> rx.Component:
                     ),
                     rx.hstack(
                         rx.dialog.close(rx.button("Cancelar", variant="soft")),
-                        rx.button("Crear Usuario", type="submit", variant="solid", color_scheme="cyan"),
+                        rx.button("Crear Usuario", type="submit", variant="solid", color_scheme="indigo"),
                         spacing="3", width="100%", justify="end", padding_top="16px",
                     ),
                     spacing="4",

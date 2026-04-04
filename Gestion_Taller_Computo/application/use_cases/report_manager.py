@@ -48,9 +48,10 @@ class ReportManager:
         return {
             "orders_by_status": self.analytics_repo.get_work_order_summary(),
             "technician_performance": self.analytics_repo.get_technician_productivity(),
-            "critical_stock_items": self.analytics_repo.get_top_moving_products(
-                limit=5
-            ),
+            "critical_stock_items": self.analytics_repo.get_top_moving_products(limit=5),
+            "avg_repair_time": self.analytics_repo.get_avg_repair_time(),
+            "daily_revenue": self.analytics_repo.get_daily_revenue(days=7),
+            "top_incidents": self.analytics_repo.get_top_incidents(limit=5),
         }
 
     def get_audit_report(self, days: int = 30) -> Dict[str, Any]:

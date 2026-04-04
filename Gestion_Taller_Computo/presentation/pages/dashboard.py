@@ -24,11 +24,17 @@ def kpi_grid() -> rx.Component:
     """Cuadrícula de indicadores clave."""
     return rx.grid(
         stat_card(
-            "Ingresos del Mes", 
+            "Ingresos Mes", 
             rx.text("$", DashboardState.financials['total_collected']), 
             "dollar-sign", 
             growth=DashboardState.financials['revenue_growth'], 
             color="green"
+        ),
+        stat_card(
+            "Eficiencia TAT", 
+            rx.text(DashboardState.avg_hours, " h"), 
+            "timer", 
+            color="amber"
         ),
         stat_card(
             "Órdenes en Taller", 
@@ -37,18 +43,12 @@ def kpi_grid() -> rx.Component:
             color="cyan"
         ),
         stat_card(
-            "Reparos Finalizados", 
+            "Finalizados", 
             rx.text(DashboardState.summary['COMPLETED']), 
             "circle-check", 
             color="indigo"
         ),
-        stat_card(
-            "Alertas de Stock", 
-            rx.text(DashboardState.critical_stock.length()), 
-            "package", 
-            color="amber"
-        ),
-        columns=rx.breakpoints(initial="1", sm="2", lg="4"),
+        columns=rx.breakpoints(initial="2", sm="2", lg="4"),
         spacing="5",
         width="100%",
     )
@@ -56,22 +56,46 @@ def kpi_grid() -> rx.Component:
 def recent_activity() -> rx.Component:
     """Tabla de actividad reciente y rendimiento de técnicos."""
     return rx.grid(
-        # Lista de Técnicos
+        # Gráfica de Ingresos
         rx.card(
             rx.vstack(
-                rx.heading("Desempeño de Técnicos", size="4", weight="bold", margin_bottom="12px"),
+                rx.heading("Ingresos Diarios (7d)", size="4", weight="bold", margin_bottom="20px"),
+                rx.recharts.area_chart(
+                    rx.recharts.area(
+                        data_key="revenue",
+                        stroke=rx.color("green", 9),
+                        fill=rx.color("green", 5),
+                    ),
+                    rx.recharts.x_axis(data_key="date", hide=True),
+                    rx.recharts.y_axis(),
+                    rx.recharts.cartesian_grid(stroke_dasharray="3 3", vertical=False),
+                    rx.recharts.graphing_tooltip(),
+                    data=DashboardState.financials["last_7_days"],
+                    width="100%",
+                    height=200,
+                ),
+            ),
+            padding="24px",
+            border_radius="16px",
+            background=rx.color("slate", 3),
+        ),
+        # Desempeño de Técnicos
+        rx.card(
+            rx.vstack(
+                rx.heading("Técnicos Activos", size="4", weight="bold", margin_bottom="12px"),
                 rx.vstack(
                     rx.foreach(
                         DashboardState.technicians,
                         lambda t: rx.hstack(
-                            rx.avatar(fallback=t["technician"], size="2"),
+                             # Fixed untyped var access with .to(str)
+                            rx.avatar(fallback=t["technician"].to(str)[:2].to(str), size="2"),
                             rx.vstack(
-                                rx.text(t["technician"], size="2", weight="medium"),
-                                rx.text(f"{t['status']}: {t['order_count']}", size="1", color=rx.color("slate", 10)),
+                                rx.text(t["technician"].to(str), size="2", weight="medium"),
+                                rx.text(t["status"].to(str), size="1", color=rx.color("slate", 10)),
                                 spacing="0",
                             ),
                             rx.spacer(),
-                            rx.badge(f"{t['order_count']}", color_scheme="cyan", variant="solid"),
+                            rx.badge(t["order_count"].to(str), color_scheme="indigo", variant="solid"),
                             width="100%",
                             padding_y="4px",
                         )
@@ -84,7 +108,31 @@ def recent_activity() -> rx.Component:
             border_radius="16px",
             background=rx.color("slate", 3),
         ),
-        # Productos Críticos
+        # Incidencias Recurrentes
+        rx.card(
+            rx.vstack(
+                rx.heading("Incidencias Recurrentes", size="4", weight="bold", margin_bottom="12px"),
+                rx.vstack(
+                    rx.foreach(
+                        DashboardState.top_incidents,
+                        lambda i: rx.hstack(
+                            rx.icon(tag="alert-circle", size=18, color=rx.color("red", 9)),
+                            rx.text(i["problem"].to(str), size="2", weight="medium", width="150px", overflow="hidden", white_space="nowrap", text_overflow="ellipsis"),
+                            rx.spacer(),
+                            rx.text("Frecuencia: ", i["count"].to(str), size="1", color=rx.color("slate", 10)),
+                            width="100%",
+                            padding_y="6px",
+                        )
+                    ),
+                    spacing="2",
+                    width="100%",
+                ),
+            ),
+            padding="20px",
+            border_radius="16px",
+            background=rx.color("slate", 3),
+        ),
+        # Inventario Crítico
         rx.card(
             rx.vstack(
                 rx.heading("Stock por Reposición", size="4", weight="bold", margin_bottom="12px"),
@@ -94,8 +142,8 @@ def recent_activity() -> rx.Component:
                         lambda p: rx.hstack(
                             rx.icon(tag="package", size=18, color=rx.color("amber", 9)),
                             rx.vstack(
-                                rx.text(p["name"], size="2", weight="medium", overflow="hidden", white_space="nowrap", text_overflow="ellipsis", width="150px"),
-                                rx.text(f"Stock: {p['stock']} / Min: {p['min_stock']}", size="1", color=rx.color("amber", 11)),
+                                rx.text(p["name"].to(str), size="2", weight="medium", width="150px", overflow="hidden", white_space="nowrap", text_overflow="ellipsis"),
+                                rx.text("Stock: ", p["stock"].to(str), " / Min: ", p["min_stock"].to(str), size="1", color=rx.color("amber", 11)),
                                 spacing="0",
                             ),
                             spacing="3",
@@ -107,13 +155,12 @@ def recent_activity() -> rx.Component:
                     spacing="0",
                     width="100%",
                 ),
-                rx.button("Ir a Inventario", variant="ghost", color_scheme="cyan", size="2", margin_top="8px", width="100%"),
             ),
             padding="20px",
             border_radius="16px",
             background=rx.color("slate", 3),
         ),
-        columns=rx.breakpoints(initial="1", lg="2"),
+        columns=rx.breakpoints(initial="1", md="2", lg="2"),
         spacing="5",
         width="100%",
     )
@@ -125,7 +172,7 @@ def recent_orders_table() -> rx.Component:
             rx.hstack(
                 rx.heading("Órdenes Recientes", size="5", weight="bold"),
                 rx.spacer(),
-                rx.button("Ver Todas", variant="ghost", color_scheme="cyan", size="2"),
+                rx.button("Ver Todas", variant="ghost", color_scheme="indigo", size="2"),
                 width="100%",
                 align="center",
                 margin_bottom="16px",
@@ -144,17 +191,16 @@ def recent_orders_table() -> rx.Component:
                     rx.foreach(
                         DashboardState.recent_orders,
                         lambda order: rx.table.row(
-                            rx.table.row_header_cell(order["ticket"]),
-                            rx.table.cell(order["device"]),
-                            rx.table.cell(order["customer"]),
-                            rx.table.cell(order["date"]),
+                            rx.table.row_header_cell(order["ticket"].to(str)),
+                            rx.table.cell(order["device"].to(str)),
+                            rx.table.cell(order["customer"].to(str)),
+                            rx.table.cell(order["date"].to(str)),
                             rx.table.cell(
                                 rx.badge(
-                                    order["status"],
+                                    order["status"].to(str),
                                     color_scheme=rx.match(
-                                        order["status"],
+                                        order["status"].to(str),
                                         ("COMPLETED", "green"),
-
                                         ("RECEIVED", "blue"),
                                         ("IN_REPAIR", "amber"),
                                         "slate",

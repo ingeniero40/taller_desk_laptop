@@ -9,7 +9,7 @@ def sidebar_item(text: str, icon: str, href: str, active: bool = False) -> rx.Co
             rx.icon(
                 tag=icon, 
                 size=18, 
-                color=rx.color("cyan", 9) if active else rx.color("slate", 10),
+                color=rx.color("indigo", 9) if active else rx.color("slate", 10),
                 stroke_width=2,
             ),
             rx.text(
@@ -23,12 +23,12 @@ def sidebar_item(text: str, icon: str, href: str, active: bool = False) -> rx.Co
             border_radius="10px",
             background=rx.cond(
                 active,
-                f"linear-gradient(90deg, {rx.color('cyan', 3)} 0%, {rx.color('cyan', 2)} 100%)",
+                f"linear-gradient(90deg, {rx.color('indigo', 3)} 0%, {rx.color('indigo', 2)} 100%)",
                 "transparent"
             ),
             border=rx.cond(
                 active,
-                f"1px solid {rx.color('cyan', 5)}",
+                f"1px solid {rx.color('indigo', 5)}",
                 "1px solid transparent"
             ),
             _hover={
@@ -52,10 +52,10 @@ def sidebar(active_page: str = "/") -> rx.Component:
             rx.hstack(
                 rx.box(
                     rx.icon(tag="bolt", size=22, color="white"),
-                    background=f"linear-gradient(135deg, {rx.color('cyan', 9)} 0%, {rx.color('indigo', 9)} 100%)",
+                    background=f"linear-gradient(135deg, {rx.color('indigo', 9)} 0%, {rx.color('blue', 9)} 100%)",
                     padding="8px",
                     border_radius="8px",
-                    box_shadow=f"0 4px 12px {rx.color('cyan', 4)}",
+                    box_shadow=f"0 4px 12px {rx.color('indigo', 4)}",
                 ),
                 rx.heading("GRAVITY", size="6", weight="bold", color=rx.color("slate", 12), letter_spacing="1px"),
                 spacing="3",
@@ -113,7 +113,7 @@ def sidebar(active_page: str = "/") -> rx.Component:
                         checked=rx.cond(rx.color_mode == "dark", True, False),
                         on_change=rx.toggle_color_mode,
                         radius="full",
-                        color_scheme="cyan",
+                        color_scheme="indigo",
                     ),
                     width="100%",
                     padding="12px 16px",

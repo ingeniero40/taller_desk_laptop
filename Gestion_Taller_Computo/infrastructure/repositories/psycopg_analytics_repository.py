@@ -126,3 +126,47 @@ class Psycopg2AnalyticsRepository(IAnalyticsRepository):
                 }
             )
         return recent_orders
+
+    def get_avg_repair_time(self) -> float:
+        """
+        Calcula el tiempo promedio (en horas) entre la creación y la entrega (COMPLETED/DELIVERED).
+        """
+        query = """
+            SELECT AVG(
+                EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600
+            ) as avg_hours
+            FROM work_orders
+            WHERE status IN ('COMPLETED', 'DELIVERED')
+            AND updated_at > created_at;
+        """
+        results = self.db.executeRawQuery(query, fetch=True)
+        return float(results[0][0]) if results and results[0][0] else 0.0
+
+    def get_daily_revenue(self, days: int = 30) -> List[Dict[str, Any]]:
+        """
+        Obtiene los ingresos diarios de los últimos N días registrados.
+        """
+        query = """
+            SELECT payment_date::date as day, SUM(amount) as total
+            FROM payments
+            GROUP BY day
+            ORDER BY day DESC
+            LIMIT %s;
+        """
+        results = self.db.executeRawQuery(query, (days,), fetch=True)
+        return [{"date": str(row[0]), "revenue": float(row[1])} for row in results]
+
+    def get_top_incidents(self, limit: int = 5) -> List[Dict[str, Any]]:
+        """
+        Identifica las incidencias técnicas más frecuentes según las notas.
+        (Uso de LIKE o recuento de tipos de incidencia).
+        """
+        query = """
+            SELECT problem_found, COUNT(*) as frequency
+            FROM work_order_incidents
+            GROUP BY problem_found
+            ORDER BY frequency DESC
+            LIMIT %s;
+        """
+        results = self.db.executeRawQuery(query, (limit,), fetch=True)
+        return [{"problem": row[0], "count": int(row[1])} for row in results]

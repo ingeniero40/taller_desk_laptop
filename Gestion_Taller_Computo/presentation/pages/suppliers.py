@@ -13,7 +13,7 @@ def supplier_header() -> rx.Component:
                 rx.icon(tag="plus", size=18),
                 rx.text("Nuevo Proveedor"),
                 on_click=SupplierState.open_add_supplier_modal,
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
                 radius="large",
             ),
@@ -137,7 +137,7 @@ def add_supplier_modal() -> rx.Component:
                     rx.vstack(rx.text("Dirección / Localización", size="2", weight="medium"), rx.text_area(name="address", value=SupplierState.supplier_form["address"], placeholder="Av. Central 123...", width="100%")),
                     rx.hstack(
                         rx.dialog.close(rx.button("Cancelar", variant="soft")),
-                        rx.button("Guardar Proveedor", type="submit", variant="solid", color_scheme="cyan"),
+                        rx.button("Guardar Proveedor", type="submit", variant="solid", color_scheme="indigo"),
                         spacing="3",
                         width="100%",
                         justify="end",

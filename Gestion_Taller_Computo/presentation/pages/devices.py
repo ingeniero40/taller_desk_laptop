@@ -13,7 +13,7 @@ def device_header() -> rx.Component:
                 rx.icon(tag="plus", size=18),
                 rx.text("Registrar Dispositivo"),
                 on_click=DeviceState.open_add_device_modal,
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
                 radius="large",
             ),
@@ -118,7 +118,7 @@ def add_device_modal() -> rx.Component:
                     ),
                     rx.hstack(
                         rx.dialog.close(rx.button("Cancelar", variant="soft")),
-                        rx.button("Registrar", type="submit", variant="solid", color_scheme="cyan"),
+                        rx.button("Registrar", type="submit", variant="solid", color_scheme="indigo"),
                         spacing="3",
                         width="100%",
                         justify="end",

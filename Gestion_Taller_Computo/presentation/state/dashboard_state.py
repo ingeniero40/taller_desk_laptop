@@ -20,9 +20,12 @@ class DashboardState(rx.State):
     
     financials: Dict[str, Any] = {
         "total_collected": 0.0,
-        "revenue_growth": 0.0
+        "revenue_growth": 0.0,
+        "last_7_days": []  # Para la gráfica
     }
     
+    avg_hours: float = 0.0
+    top_incidents: List[Dict[str, Any]] = []
     technicians: List[Dict[str, Any]] = []
     critical_stock: List[Dict[str, Any]] = []
     recent_orders: List[Dict[str, Any]] = []
@@ -46,18 +49,23 @@ class DashboardState(rx.State):
             # 1. Estados de órdenes
             self.summary = mgr.get_workshop_dashboard_data()["orders_by_status"]
             
-            # 2. Financieros
+            # 2. Financieros y TAT
             fin_report = mgr.get_monthly_financial_report()
+            dash_data = mgr.get_workshop_dashboard_data()
             curr = fin_report["current_month"]
+            
             self.financials = {
                 "total_collected": curr["total_collected"],
-                "revenue_growth": fin_report["revenue_growth_percent"]
+                "total_invoiced": curr["total_invoiced"],
+                "revenue_growth": fin_report["revenue_growth_percent"],
+                "last_7_days": dash_data["daily_revenue"][::-1] # Invertir para orden cronológico
             }
+            self.avg_hours = round(dash_data.get("avg_repair_time", 0), 1)
             
-            # 3. Técnicos y Stock
-            dash_data = mgr.get_workshop_dashboard_data()
+            # 3. Técnicos, Stock e Incidencias
             self.technicians = dash_data["technician_performance"]
             self.critical_stock = dash_data["critical_stock_items"]
+            self.top_incidents = dash_data["top_incidents"]
             self.recent_orders = repo.get_recent_work_orders(limit=10)
 
             

@@ -30,10 +30,11 @@ def index() -> rx.Component:
 
 app = rx.App(
     theme=rx.theme(
-        appearance="inherit",
+        appearance="light",  # Por defecto light, permitiendo switch
         has_background=True,
         radius="large",
-        accent_color="cyan",
+        accent_color="indigo",
+        gray_color="slate",
     )
 )
 

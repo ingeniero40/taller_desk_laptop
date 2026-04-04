@@ -13,7 +13,7 @@ def billing_header() -> rx.Component:
                 rx.icon(tag="file-text", size=18),
                 rx.text("Nuevo Presupuesto"),
                 on_click=lambda: BillingState.set_show_quote_modal(True),
-                color_scheme="cyan",
+                color_scheme="indigo",
                 variant="solid",
                 radius="large",
             ),
@@ -259,7 +259,7 @@ def quote_modal() -> rx.Component:
                         rx.dialog.close(
                             rx.button("Cancelar", variant="soft", color_scheme="gray")
                         ),
-                        rx.button("Guardar Presupuesto", type="submit", color_scheme="cyan"),
+                        rx.button("Guardar Presupuesto", type="submit", color_scheme="indigo"),
                         width="100%",
                         justify="end",
                         spacing="3",
