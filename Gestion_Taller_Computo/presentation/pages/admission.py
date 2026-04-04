@@ -554,10 +554,10 @@ def step_confirmation() -> rx.Component:
 
 def step_content() -> rx.Component:
     return rx.box(
-        rx.cond(AdmissionState.current_step == 1, step_customer()),
-        rx.cond(AdmissionState.current_step == 2, step_device()),
-        rx.cond(AdmissionState.current_step == 3, step_problem()),
-        rx.cond(AdmissionState.current_step == 4, step_confirmation()),
+        rx.cond(AdmissionState.current_step == 1, step_customer(), rx.fragment()),
+        rx.cond(AdmissionState.current_step == 2, step_device(), rx.fragment()),
+        rx.cond(AdmissionState.current_step == 3, step_problem(), rx.fragment()),
+        rx.cond(AdmissionState.current_step == 4, step_confirmation(), rx.fragment()),
         width="100%",
     )
 

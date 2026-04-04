@@ -8,6 +8,7 @@ class Product(BaseEntity, table=True):
     __tablename__: str = "products"
 
     sku: str = Field(unique=True, index=True, nullable=False)
+    barcode: Optional[str] = Field(default=None, unique=True, index=True)
     name: str = Field(index=True, nullable=False)
     description: Optional[str] = Field(default=None)
 

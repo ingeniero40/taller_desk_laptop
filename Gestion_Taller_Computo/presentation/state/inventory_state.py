@@ -54,6 +54,18 @@ class InventoryState(rx.State):
     # Carga de datos
     is_loading: bool = True
 
+    @rx.event
+    def set_show_product_modal(self, val: bool):
+        self.show_product_modal = val
+
+    @rx.event
+    def set_show_stock_modal(self, val: bool):
+        self.show_stock_modal = val
+
+    @rx.event
+    def set_show_movements_modal(self, val: bool):
+        self.show_movements_modal = val
+
     def on_load(self):
         """Inicializa los datos al cargar la página."""
         self.is_loading = True

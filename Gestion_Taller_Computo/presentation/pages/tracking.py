@@ -732,11 +732,11 @@ def detail_panel() -> rx.Component:
                 rx.divider(opacity=0.2),
                 # Contenido según tab activo
                 rx.box(
-                    rx.cond(TrackingState.active_tab == "info",       info_tab()),
-                    rx.cond(TrackingState.active_tab == "comments",   comments_tab()),
-                    rx.cond(TrackingState.active_tab == "incidents",  incidents_tab()),
-                    rx.cond(TrackingState.active_tab == "parts",      parts_tab()),
-                    rx.cond(TrackingState.active_tab == "finance",    finance_tab()),
+                    rx.cond(TrackingState.active_tab == "info", info_tab(), rx.fragment()),
+                    rx.cond(TrackingState.active_tab == "comments", comments_tab(), rx.fragment()),
+                    rx.cond(TrackingState.active_tab == "incidents", incidents_tab(), rx.fragment()),
+                    rx.cond(TrackingState.active_tab == "parts", parts_tab(), rx.fragment()),
+                    rx.cond(TrackingState.active_tab == "finance", finance_tab(), rx.fragment()),
                     width="100%",
                 ),
                 spacing="4", width="100%",

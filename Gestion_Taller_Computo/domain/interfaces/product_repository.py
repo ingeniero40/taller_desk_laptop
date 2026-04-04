@@ -20,6 +20,11 @@ class IProductRepository(ABC):
         pass
 
     @abstractmethod
+    def findByBarcode(self, barcode: str) -> Optional[Product]:
+        """Busca un producto por su código de barras."""
+        pass
+
+    @abstractmethod
     def findBySku(self, sku: str) -> Optional[Product]:
         """Busca un producto por su código SKU."""
         pass

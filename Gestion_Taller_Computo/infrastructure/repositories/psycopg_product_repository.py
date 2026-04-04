@@ -17,10 +17,10 @@ class Psycopg2ProductRepository(IProductRepository):
     def create(self, product: Product) -> Product:
         query = """
             INSERT INTO products (
-                id, created_at, updated_at, sku, name, description, 
+                id, created_at, updated_at, sku, barcode, name, description, 
                 cost_price, sale_price, stock, min_stock, category, supplier_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
         params = (
@@ -28,6 +28,7 @@ class Psycopg2ProductRepository(IProductRepository):
             product.created_at,
             product.updated_at,
             product.sku,
+            product.barcode,
             product.name,
             product.description,
             product.cost_price,
@@ -43,6 +44,14 @@ class Psycopg2ProductRepository(IProductRepository):
     def findById(self, productId: uuid.UUID) -> Optional[Product]:
         query = "SELECT * FROM products WHERE id = %s"
         params = (str(productId),)
+        results = self.db.executeRawQuery(query, params, fetch=True)
+        if results:
+            return self._map_row_to_entity(results[0])
+        return None
+
+    def findByBarcode(self, barcode: str) -> Optional[Product]:
+        query = "SELECT * FROM products WHERE barcode = %s"
+        params = (barcode,)
         results = self.db.executeRawQuery(query, params, fetch=True)
         if results:
             return self._map_row_to_entity(results[0])
@@ -71,13 +80,14 @@ class Psycopg2ProductRepository(IProductRepository):
         product.updated_at = datetime.utcnow()
         query = """
             UPDATE products 
-            SET sku = %s, name = %s, description = %s, cost_price = %s, 
+            SET sku = %s, barcode = %s, name = %s, description = %s, cost_price = %s, 
                 sale_price = %s, stock = %s, min_stock = %s, category = %s, 
                 supplier_id = %s, updated_at = %s
             WHERE id = %s
         """
         params = (
             product.sku,
+            product.barcode,
             product.name,
             product.description,
             product.cost_price,
@@ -124,12 +134,13 @@ class Psycopg2ProductRepository(IProductRepository):
             created_at=row[1],
             updated_at=row[2],
             sku=row[3],
-            name=row[4],
-            description=row[5],
-            cost_price=float(row[6]),
-            sale_price=float(row[7]),
-            stock=int(row[8]),
-            min_stock=int(row[9]),
-            category=row[10],
-            supplier_id=uuid.UUID(str(row[11])) if row[11] else None,
+            barcode=row[4],
+            name=row[5],
+            description=row[6],
+            cost_price=float(row[7]),
+            sale_price=float(row[8]),
+            stock=int(row[9]),
+            min_stock=int(row[10]),
+            category=row[11],
+            supplier_id=uuid.UUID(str(row[12])) if row[12] else None,
         )

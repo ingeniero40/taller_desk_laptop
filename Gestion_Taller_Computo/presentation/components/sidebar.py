@@ -86,6 +86,7 @@ def sidebar(active_page: str = "/") -> rx.Component:
                     rx.text("OPERACIONES", size="1", weight="bold", color=rx.color("slate", 9), padding_left="16px", letter_spacing="1.5px"),
                     sidebar_item("Inventario", "package", "/inventory", active=(active_page == "/inventory")),
                     sidebar_item("Facturación", "receipt-text", "/billing", active=(active_page == "/billing")),
+                    sidebar_item("POS - Venta", "shopping-cart", "/pos", active=(active_page == "/pos")),
                     sidebar_item("Proveedores", "truck", "/suppliers", active=(active_page == "/suppliers")),
                     spacing="2",
                     width="100%",

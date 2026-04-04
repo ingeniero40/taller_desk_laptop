@@ -48,6 +48,30 @@ class BillingState(rx.State):
     is_loading: bool = True
 
     @rx.event
+    def set_search_query(self, val: str):
+        self.search_query = val
+
+    @rx.event
+    def set_status_filter(self, val: str):
+        self.status_filter = val
+
+    @rx.event
+    def set_show_payment_modal(self, val: bool):
+        self.show_payment_modal = val
+
+    @rx.event
+    def set_show_quote_modal(self, val: bool):
+        self.show_quote_modal = val
+
+    @rx.event
+    def set_payment_method(self, val: str):
+        self.payment_method = val
+
+    @rx.event
+    def set_payment_reference(self, val: str):
+        self.payment_reference = val
+
+    @rx.event
     def fetch_all_docs(self):
         """Obtiene todas las facturas y presupuestos."""
         try:
