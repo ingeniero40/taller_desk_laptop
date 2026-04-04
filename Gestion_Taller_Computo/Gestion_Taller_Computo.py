@@ -11,6 +11,7 @@ from .presentation.pages.agenda import agenda_page
 from .presentation.pages.admission import admission_page
 from .presentation.pages.tracking import tracking_page
 from .presentation.pages.pos import pos_page
+from .presentation.pages.portal import portal_page
 from .presentation.state.dashboard_state import DashboardState
 from .presentation.state.inventory_state import InventoryState
 from .presentation.state.billing_state import BillingState
@@ -119,4 +120,10 @@ app.add_page(
     route="/pos",
     title="Taller Desk & Laptop | POS Venta",
     on_load=[AuthState.check_operations, POSState.on_load]
+)
+
+app.add_page(
+    portal_page,
+    route="/portal",
+    title="Taller Desk & Laptop | Portal de Servicios",
 )
