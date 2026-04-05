@@ -314,13 +314,21 @@ class OrderState(rx.State):
 
     @rx.event
     def save_new_order(self):
+        # Validaciones de Formulario
+        if not self.selected_customer_id:
+            return rx.window_alert("Debe seleccionar un cliente.")
+        
         if not self.selected_device_id:
-            return rx.window_alert("Debe seleccionar un equipo.")
+            return rx.window_alert("Debe seleccionar un equipo del cliente.")
+        
+        if not self.order_description.strip():
+            return rx.window_alert("La descripción del reporte es obligatoria.")
+
         try:
             order_repo = Psycopg2WorkOrderRepository()
             history_repo = Psycopg2WorkOrderHistoryRepository()
             mgr = WorkOrderManager(order_repo, history_repo)
-
+            
             tech_id = uuid.UUID(self.selected_technician_id) if self.selected_technician_id else None
 
             mgr.open_order(
@@ -330,7 +338,8 @@ class OrderState(rx.State):
                 technician_id=tech_id,
             )
             self.show_order_modal = False
-            return self.fetch_orders()
+            self.on_load()  # Recargar todo para asegurar consistencia
+            return rx.window_alert(f"Orden creada correctamente.")
         except Exception as e:
             return rx.window_alert(f"Error al crear orden: {str(e)}")
 
@@ -352,25 +361,28 @@ class OrderState(rx.State):
             order_repo = Psycopg2WorkOrderRepository()
             history_repo = Psycopg2WorkOrderHistoryRepository()
             mgr = WorkOrderManager(order_repo, history_repo)
-
-            status_enum = WorkOrderStatus[self.new_status]
-
+            
+            order_id = uuid.UUID(self.selected_order["id"])
+            
+            # 1. Actualizar Datos Técnicos
             mgr.update_status(
-                order_id=uuid.UUID(self.selected_order["id"]),
-                status=status_enum,
+                order_id=order_id,
+                status=WorkOrderStatus[self.new_status],
                 notes=self.status_notes,
                 price=float(self.new_price),
                 actual_hours=float(self.new_actual_hours) if self.new_actual_hours else None,
             )
+            
             self.show_status_modal = False
 
             # Actualizar el panel de detalle si está abierto
             if self.show_detail_panel:
                 self._fetch_history(self.selected_order["id"])
 
-            return self.fetch_orders()
+            self.fetch_orders()
+            return rx.window_alert("Estado actualizado correctamente.")
         except Exception as e:
-            return rx.window_alert(f"Error al actualizar: {str(e)}")
+            return rx.window_alert(f"Error al actualizar estado: {str(e)}")
 
     # ── Helpers ───────────────────────────────────────────────────────────
 

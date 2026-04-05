@@ -19,10 +19,17 @@ try:
     from Gestion_Taller_Computo.domain.entities.user import User
     from Gestion_Taller_Computo.domain.entities.device import Device
     from Gestion_Taller_Computo.domain.entities.work_order import WorkOrder
+    from Gestion_Taller_Computo.domain.entities.work_order_history import WorkOrderHistory
+    from Gestion_Taller_Computo.domain.entities.work_order_incident import WorkOrderIncident
+    from Gestion_Taller_Computo.domain.entities.work_order_comment import WorkOrderComment
     from Gestion_Taller_Computo.domain.entities.product import Product
+    from Gestion_Taller_Computo.domain.entities.inventory_movement import InventoryMovement
     from Gestion_Taller_Computo.domain.entities.supplier import Supplier
     from Gestion_Taller_Computo.domain.entities.invoice import Invoice
+    from Gestion_Taller_Computo.domain.entities.invoice_item import InvoiceItem
     from Gestion_Taller_Computo.domain.entities.payment import Payment
+    from Gestion_Taller_Computo.domain.entities.quote import Quote
+    from Gestion_Taller_Computo.domain.entities.audit_log import AuditLog
 except Exception as e:
     print(f"⚠️ Advertencia al importar entidades: {e}")
 

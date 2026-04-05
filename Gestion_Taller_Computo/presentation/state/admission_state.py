@@ -294,6 +294,7 @@ class AdmissionState(rx.State):
         self.is_loading = True
         self.error_message = ""
         try:
+            from ...infrastructure.repositories.psycopg_work_order_history_repository import Psycopg2WorkOrderHistoryRepository
             user_repo = Psycopg2UserRepository()
             user_mgr = UserManager(user_repo)
 
@@ -301,7 +302,8 @@ class AdmissionState(rx.State):
             dev_mgr = DeviceManager(device_repo)
 
             order_repo = Psycopg2WorkOrderRepository()
-            order_mgr = WorkOrderManager(order_repo)
+            history_repo = Psycopg2WorkOrderHistoryRepository()
+            order_mgr = WorkOrderManager(order_repo, history_repo)
 
             # 1. Registrar cliente nuevo si aplica
             customer_id_str = self.selected_customer_id

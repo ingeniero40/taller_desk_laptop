@@ -91,17 +91,11 @@ class DeviceState(rx.State):
         ]
     
     @rx.var
-    def customer_ids(self) -> List[str]:
-        return [c["id"] for c in self.customers]
+    def customer_options(self) -> List[str]:
+        return [c["name"] for c in self.customers]
 
     @rx.event
     def open_add_device_modal(self):
-        self.device_form = {
-            "brand": "",
-            "model": "",
-            "serial_number": "",
-            "customer_id": self.customers[0]["id"] if self.customers else ""
-        }
         self.show_device_modal = True
 
     @rx.event
@@ -114,10 +108,14 @@ class DeviceState(rx.State):
             brand = form_data.get("brand")
             model = form_data.get("model")
             serial = form_data.get("serial_number")
-            customer_id = form_data.get("customer_id")
+            customer_name = form_data.get("customer_name")
             
+            # Buscar ID del cliente por nombre
+            match = next((c for c in self.customers if c["name"] == customer_name), None)
+            customer_id = match["id"] if match else None
+
             if not brand or not model or not serial or not customer_id:
-                return rx.window_alert("Todos los campos son obligatorios.")
+                return rx.window_alert("Todos los campos són obligatorios.")
                 
             dev_mgr.register_device(
                 brand=brand,

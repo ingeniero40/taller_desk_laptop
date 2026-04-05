@@ -109,9 +109,9 @@ def add_device_modal() -> rx.Component:
                     rx.vstack(
                         rx.text("Asociar Cliente Propietario", size="2", weight="medium"),
                         rx.select(
-                            DeviceState.customer_ids,
-                            name="customer_id",
-                            placeholder="Selecciona el cliente",
+                            DeviceState.customer_options,
+                            name="customer_name",
+                            placeholder="Seleccione el cliente",
                             width="100%",
                         ),
                         width="100%",
