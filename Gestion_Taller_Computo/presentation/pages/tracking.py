@@ -332,17 +332,48 @@ def info_tab() -> rx.Component:
             ),
             padding="14px", width="100%",
         ),
-        rx.cond(
-            o["repair_notes"] != "",
-            rx.card(
-                rx.vstack(
-                    rx.hstack(rx.icon(tag="wrench", size=14, color=rx.color("cyan", 9)),
-                              rx.text("Notas Técnicas", size="2", weight="bold"), spacing="2"),
-                    rx.text(o["repair_notes"], size="2", color=rx.color("slate", 11)),
-                    spacing="2",
+        # Extra: Diagnóstico Sugerido por IA y Análisis de Recurrencia
+        rx.card(
+            rx.vstack(
+                rx.hstack(
+                    rx.icon(tag="brain-circuit", size=18, color=rx.color("indigo", 9)),
+                    rx.text("Inteligencia de Diagnóstico", size="2", weight="bold"),
+                    rx.spacer(),
+                    rx.button(
+                        rx.cond(TrackingState.is_analyzing, rx.spinner(size="1"), rx.icon(tag="sparkles", size=14)),
+                        rx.text("Consultar IA"),
+                        on_click=TrackingState.get_suggested_diagnostic,
+                        variant="soft", color_scheme="indigo", size="2",
+                        disabled=TrackingState.is_analyzing,
+                    ),
+                    width="100%", align="center", spacing="2",
                 ),
-                padding="14px", width="100%",
+                rx.cond(
+                    TrackingState.ai_suggestion != "",
+                    rx.vstack(
+                        rx.box(
+                            rx.text(TrackingState.recurrence_prediction, 
+                                    size="1", weight="bold", color=rx.color("amber", 11)),
+                            padding="4px 8px", border_radius="6px", 
+                            background=rx.color("amber", 2),
+                            width="100%", margin_bottom="8px",
+                        ),
+                        rx.box(
+                            rx.text(TrackingState.ai_suggestion, size="2", italic=True),
+                            padding="12px", border_radius="8px",
+                            background=rx.color("indigo", 1),
+                            border=f"1px dashed {rx.color('indigo', 5)}",
+                            width="100%",
+                        ),
+                        width="100%",
+                    ),
+                    rx.text("Haz clic en 'Consultar IA' para obtener sugerencias técnicas basadas en el problema reportado.", 
+                            size="1", color=rx.color("slate", 9), italic=True),
+                ),
+                spacing="3",
             ),
+            padding="16px", width="100%", border=f"1px solid {rx.color('indigo', 3)}",
+            background=f"linear-gradient(135deg, {rx.color('indigo', 1)}, {rx.color('slate', 1)})",
         ),
         # Comparativa Visual (Contexto 9)
         rx.cond(
@@ -761,12 +792,30 @@ def detail_panel() -> rx.Component:
                         spacing="1",
                     ),
                     rx.spacer(),
+                    # Nuevo Extra: QR de Seguimiento (Contexto Extras)
+                    rx.box(
+                        rx.tooltip(
+                            rx.image(
+                                src=TrackingState.order_qr_url,
+                                width="75px", height="75px",
+                                border_radius="8px",
+                                border=f"1px solid {rx.color('slate', 4)}",
+                                padding="2px", background="white",
+                                cursor="pointer",
+                            ),
+                            content="Escanea para ver en el Portal del Cliente",
+                        ),
+                        box_shadow="md",
+                        _hover={"transform": "scale(1.1)"},
+                        transition="transform 0.2s",
+                        margin_right="12px",
+                    ),
+                    rx.spacer(),
                     rx.icon_button(
                         rx.icon(tag="x", size=18),
                         on_click=TrackingState.close_detail,
                         variant="ghost", color_scheme="gray",
                     ),
-                    width="100%", align_items="start",
                 ),
                 # Tabs
                 detail_tabs(),

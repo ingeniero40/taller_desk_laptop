@@ -101,15 +101,14 @@ class PortalState(rx.State):
     def _load_public_comments(self, order_id: str):
         """Carga solo los comentarios no privados (públicos) para el cliente."""
         comment_repo = Psycopg2WorkOrderCommentRepository()
-        all_comments = comment_repo.findByWorkOrderId(uuid.UUID(order_id))
+        all_comments = comment_repo.findByOrderId(uuid.UUID(order_id), include_internal=False)
         
-        # Filtramos internos (is_internal=False)
         self.order_comments = [
             {
                 "date": c.created_at.strftime("%d/%m %H:%M"),
                 "author": c.author_name,
                 "content": c.content
-            } for c in all_comments if not c.is_internal
+            } for c in all_comments
         ]
 
     @rx.event

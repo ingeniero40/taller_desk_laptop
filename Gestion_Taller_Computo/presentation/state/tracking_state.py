@@ -235,6 +235,16 @@ class TrackingState(rx.State):
         return [o for o in self._filtered() if o["status"] == "DELIVERED"]
 
     @rx.var
+    def order_qr_url(self) -> str:
+        """URL del código QR para el portal del cliente."""
+        ticket = self.selected_order.get("ticket")
+        if not ticket:
+            return ""
+        # Link real al portal local (en producción sería la URL pública)
+        portal_url = f"http://localhost:3000/portal?ticket={ticket}"
+        return f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={portal_url}"
+
+    @rx.var
     def total_active(self) -> int:
         return sum(1 for o in self.all_orders if o["status"] in ACTIVE_STATUSES)
 
@@ -601,9 +611,43 @@ class TrackingState(rx.State):
                 # Actualizar el precio de la selección_actual
                 self.selected_order["price"] = self.quote_amount
                 self._load_comments(order_id)
-                return rx.window_alert("Cotización actualizada.")
+                return rx.window_alert(f"Cotización actualizada a ${self.quote_amount:.2f}")
         except Exception as e:
-            return rx.window_alert(f"Error: {e}")
+            return rx.window_alert(f"Error al actualizar cotización: {e}")
+
+    # ── Extras Context: IA y Sugerencias ───────────────────────────────────────
+    ai_suggestion: str = ""
+    is_analyzing: bool = False
+    recurrence_prediction: str = ""
+
+    @rx.event
+    def get_suggested_diagnostic(self):
+        """Pide a la IA una sugerencia basada en el problema reportado."""
+        problem = self.selected_order.get("problem_found")
+        if not problem:
+            self.ai_suggestion = "No hay descripción del problema para analizar."
+            return
+            
+        self.is_analyzing = True
+        yield
+        
+        try:
+            from ...infrastructure.repositories.psycopg_analytics_repository import Psycopg2AnalyticsRepository
+            analytics_repo = Psycopg2AnalyticsRepository()
+            freq = analytics_repo.get_frequent_problems()
+            matches = [f for f in freq if problem.lower() in f["problem"].lower()]
+            if matches:
+                self.recurrence_prediction = f"⚠ Este problema ha ocurrido {matches[0]['frequency']} veces antes en el taller."
+            else:
+                self.recurrence_prediction = "✓ Problema poco común registrado."
+                
+            # Simulación de IA (En un entorno real llamaríamos a Gemini/OpenAI)
+            self.ai_suggestion = f"Basado en '{problem}', se recomienda: 1. Revisar voltajes de entrada. 2. Realizar limpieza de contactos. 3. Verificar última actualización de BIOS."
+            
+        except Exception as e:
+            self.ai_suggestion = f"Error al analizar: {e}"
+        finally:
+            self.is_analyzing = False
 
     @rx.event
     def generate_invoice(self):
